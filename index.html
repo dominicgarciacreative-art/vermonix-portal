@@ -4,8 +4,8 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Vermonix Partner Portal</title>
-<meta name="theme-color" content="#100B08" media="(prefers-color-scheme: dark)">
-<meta name="theme-color" content="#FBF7F4" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0D0B07" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#FBF8F1" media="(prefers-color-scheme: light)">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Vermonix">
@@ -45,46 +45,46 @@
    Day applies on a light OS or an explicit stamp.
    ———————————————————————————————————————————— */
 :root{
-  --bg:#100B08; --panel:#1B1310; --panel-soft:#241A15; --raise:#2C201A;
-  --line:#33251E; --line-soft:#281D18;
-  --text:#F6EFEA; --muted:#A2938B; --faint:#6F625B;
-  --gold:#FF7A1A; --gold-soft:#C2560E; --gold-wash:rgba(255,122,26,.12);
-  --grad:linear-gradient(135deg,#FF9A4A 0%,#FF7A1A 45%,#E85D04 100%);
-  --accent2:#8A6F62;
-  --ok:#4ADE80; --warn:#FBBF24; --crit:#F87171;
-  --ok-wash:rgba(74,222,128,.13); --warn-wash:rgba(251,191,36,.13); --crit-wash:rgba(248,113,113,.13);
-  --on-gold:#20120A;
+  --bg:#0D0B07; --panel:#17140E; --panel-soft:#1F1B13; --raise:#262117;
+  --line:#322C20; --line-soft:#261F17;
+  --text:#F4EFE3; --muted:#9F978A; --faint:#6D6558;
+  --gold:#D4A94F; --gold-soft:#8A6F3B; --gold-wash:rgba(212,169,79,.12);
+  --grad:linear-gradient(135deg,#F0D390 0%,#D4A94F 46%,#A87C2A 100%);
+  --accent2:#83786A;
+  --ok:#6FCF97; --warn:#E3B341; --crit:#E1786B;
+  --ok-wash:rgba(111,207,151,.13); --warn-wash:rgba(227,179,65,.13); --crit-wash:rgba(225,120,107,.13);
+  --on-gold:#1D1608;
   --shadow:0 20px 44px rgba(0,0,0,.55);
-  --glow:0 14px 34px rgba(232,93,4,.32);
+  --glow:0 14px 34px rgba(168,124,42,.28);
   --r:20px; --r2:14px; --r3:10px;
 }
 @media (prefers-color-scheme: light){
   :root:not([data-theme="dark"]){
-    --bg:#FBF7F4; --panel:#FFFFFF; --panel-soft:#F6EFE9; --raise:#FFFFFF;
-    --line:#EADFD6; --line-soft:#F2E9E2;
-    --text:#1E1512; --muted:#7A6A61; --faint:#A6958B;
-    --gold:#E85D04; --gold-soft:#FF9A4A; --gold-wash:rgba(232,93,4,.09);
-    --grad:linear-gradient(135deg,#FF9A4A 0%,#FF7A1A 45%,#E85D04 100%);
-    --accent2:#A8897A;
-    --ok:#16A34A; --warn:#D97706; --crit:#DC2626;
-    --ok-wash:rgba(22,163,74,.12); --warn-wash:rgba(217,119,6,.12); --crit-wash:rgba(220,38,38,.12);
-    --on-gold:#FFFFFF;
-    --shadow:0 18px 40px rgba(60,30,15,.10);
-    --glow:0 14px 30px rgba(232,93,4,.22);
+    --bg:#FBF8F1; --panel:#FFFFFF; --panel-soft:#F5EFE2; --raise:#FFFFFF;
+    --line:#E7DDC8; --line-soft:#F1EADC;
+    --text:#1C1810; --muted:#786F5F; --faint:#A69B85;
+    --gold:#A97F1F; --gold-soft:#C9A24B; --gold-wash:rgba(169,127,31,.10);
+    --grad:linear-gradient(135deg,#E8C87E 0%,#C9A24B 45%,#9A7526 100%);
+    --accent2:#A2937B;
+    --ok:#3F8F5E; --warn:#B07C12; --crit:#C2493A;
+    --ok-wash:rgba(63,143,94,.12); --warn-wash:rgba(176,124,18,.12); --crit-wash:rgba(194,73,58,.12);
+    --on-gold:#241C0B;
+    --shadow:0 18px 40px rgba(60,45,15,.10);
+    --glow:0 14px 30px rgba(169,127,31,.20);
   }
 }
 :root[data-theme="light"]{
-  --bg:#FBF7F4; --panel:#FFFFFF; --panel-soft:#F6EFE9; --raise:#FFFFFF;
-  --line:#EADFD6; --line-soft:#F2E9E2;
-  --text:#1E1512; --muted:#7A6A61; --faint:#A6958B;
-  --gold:#E85D04; --gold-soft:#FF9A4A; --gold-wash:rgba(232,93,4,.09);
-    --grad:linear-gradient(135deg,#FF9A4A 0%,#FF7A1A 45%,#E85D04 100%);
-  --accent2:#A8897A;
-  --ok:#16A34A; --warn:#D97706; --crit:#DC2626;
-  --ok-wash:rgba(22,163,74,.12); --warn-wash:rgba(217,119,6,.12); --crit-wash:rgba(220,38,38,.12);
-  --on-gold:#FFFFFF;
-  --shadow:0 18px 40px rgba(60,30,15,.10);
-    --glow:0 14px 30px rgba(232,93,4,.22);
+  --bg:#FBF8F1; --panel:#FFFFFF; --panel-soft:#F5EFE2; --raise:#FFFFFF;
+  --line:#E7DDC8; --line-soft:#F1EADC;
+  --text:#1C1810; --muted:#786F5F; --faint:#A69B85;
+  --gold:#A97F1F; --gold-soft:#C9A24B; --gold-wash:rgba(169,127,31,.10);
+    --grad:linear-gradient(135deg,#E8C87E 0%,#C9A24B 45%,#9A7526 100%);
+  --accent2:#A2937B;
+  --ok:#3F8F5E; --warn:#B07C12; --crit:#C2493A;
+  --ok-wash:rgba(63,143,94,.12); --warn-wash:rgba(176,124,18,.12); --crit-wash:rgba(194,73,58,.12);
+  --on-gold:#241C0B;
+  --shadow:0 18px 40px rgba(60,45,15,.10);
+    --glow:0 14px 30px rgba(169,127,31,.20);
 }
 
 *{ box-sizing:border-box; }
@@ -149,6 +149,10 @@ button,input,select{ font:inherit; color:inherit; }
 .viewas{ background:var(--panel); border:1px solid var(--line); color:var(--text);
   font-size:13px; padding:6px 10px; max-width:220px; }
 .ghost.on{ color:var(--gold); border-color:var(--gold-soft); }
+.primary.locked{ background:var(--panel); color:var(--muted); box-shadow:none;
+  border:1px solid var(--line); }
+.primary.locked::before{ content:"\1F512"; margin-right:7px; font-size:11px; }
+.primary.locked:hover{ color:var(--text); border-color:var(--gold-soft); filter:none; background:var(--panel); }
 .banner{ display:flex; align-items:center; justify-content:space-between; gap:14px; flex-wrap:wrap;
   background:var(--gold-wash); border:1px solid var(--gold-soft); padding:11px 16px; margin-bottom:16px;
   font-size:13.5px; }
@@ -158,6 +162,36 @@ button,input,select{ font:inherit; color:inherit; }
   justify-content:space-between; gap:16px; flex-wrap:wrap;
   border-top:1px solid var(--line); color:var(--faint); font-size:12.5px; }
 .site-foot b{ font-weight:400; color:var(--muted); }
+
+/* ————— Leaderboard ————— */
+.lb{ display:flex; flex-direction:column; }
+.lb-row{ display:grid; grid-template-columns:44px 2fr 1.5fr 1fr auto; gap:16px;
+  align-items:center; width:100%; text-align:left; cursor:pointer;
+  background:none; border:none; border-top:1px solid var(--line-soft); padding:14px 20px; }
+.lb-row:first-child{ border-top:none; }
+.lb-row:hover{ background:var(--panel-soft); }
+.lb-rank{ width:34px; height:34px; border-radius:50%; display:grid; place-items:center;
+  font-size:13px; font-weight:600; color:var(--muted);
+  background:var(--panel-soft); border:1px solid var(--line); }
+.lb-row.top1 .lb-rank{ background:var(--grad); color:var(--on-gold); border-color:transparent;
+  box-shadow:var(--glow); }
+.lb-row.top2 .lb-rank{ background:color-mix(in srgb, var(--text) 16%, var(--panel-soft));
+  color:var(--text); }
+.lb-row.top3 .lb-rank{ background:color-mix(in srgb, var(--gold-soft) 34%, var(--panel-soft));
+  color:var(--text); }
+.lb-name{ font-weight:600; font-size:15px; letter-spacing:-.02em; }
+.lb-sub{ color:var(--faint); font-size:12px; }
+.lb-bar{ display:flex; align-items:center; gap:10px; color:var(--muted); font-size:12px; }
+.lb-bar .track{ height:6px; }
+.lb-val{ text-align:right; }
+.lb-val b{ display:block; font-weight:600; font-size:15px; letter-spacing:-.02em; }
+.lb-val span{ color:var(--faint); font-size:12px; }
+.lb-move{ font-size:12.5px; font-weight:500; white-space:nowrap; text-align:right; min-width:74px; }
+.lb-move.up{ color:var(--ok); } .lb-move.down{ color:var(--crit); } .lb-move.flat{ color:var(--faint); }
+@media (max-width:860px){
+  .lb-row{ grid-template-columns:38px 1fr auto; gap:12px; padding:13px 16px; }
+  .lb-bar{ display:none; }
+}
 
 /* ————— Add partner ————— */
 .modal-scrim{ position:fixed; inset:0; background:rgba(0,0,0,.55); z-index:60; }
@@ -464,8 +498,8 @@ body{ font-weight:400; letter-spacing:-.005em; }
 body::before{                                   /* the ambient warmth */
   content:""; position:fixed; inset:0; pointer-events:none; z-index:-1;
   background:
-    radial-gradient(58% 40% at 78% -6%, rgba(255,122,26,.20), transparent 70%),
-    radial-gradient(46% 34% at 8% 4%, rgba(232,93,4,.10), transparent 72%);
+    radial-gradient(58% 40% at 78% -6%, rgba(212,169,79,.16), transparent 70%),
+    radial-gradient(46% 34% at 8% 4%, rgba(168,124,42,.09), transparent 72%);
 }
 h2{ font-weight:600; letter-spacing:-.02em; font-size:19px; }
 .wordmark{ font-weight:700; letter-spacing:.10em; }
@@ -490,11 +524,12 @@ nav{ border-bottom:1px solid var(--line-soft); }
 .tile{ background:var(--panel); border:1px solid var(--line-soft); border-radius:var(--r);
   padding:18px 20px 16px; gap:8px; }
 .tile .k-value{ font-size:27px; }
-.tile.lead{ background:var(--grad); border-color:transparent; box-shadow:var(--glow); color:#fff; }
+.tile.lead{ background:var(--grad); border-color:transparent; box-shadow:var(--glow);
+  color:var(--on-gold); }
 .tile.lead .k-foot{ align-items:flex-end; }
-.tile.lead .k-label,.tile.lead .k-note{ color:rgba(255,255,255,.86); }
-.tile.lead .k-value{ color:#fff; font-size:34px; }
-.tile.lead .k-note.pos{ color:#fff; }
+.tile.lead .k-label,.tile.lead .k-note{ color:rgba(29,22,8,.72); }
+.tile.lead .k-value{ color:var(--on-gold); font-size:34px; }
+.tile.lead .k-note.pos{ color:rgba(29,22,8,.82); }
 .tile.alert{ border-color:color-mix(in srgb, var(--crit) 40%, var(--line)); }
 @media (max-width:760px){ .tile{ border-radius:var(--r2); } }
 
@@ -505,10 +540,10 @@ nav{ border-bottom:1px solid var(--line-soft); }
 .ghost,.close{ padding:7px 15px; }
 .close{ width:32px; height:32px; border-radius:50%; }
 .primary{ padding:12px 20px; text-transform:none; letter-spacing:0; font-weight:500;
-  background:var(--grad); box-shadow:var(--glow); }
+  color:var(--on-gold); background:var(--grad); box-shadow:var(--glow); }
 .primary:hover{ filter:brightness(1.06); background:var(--grad); }
 .chip.on{ background:var(--grad); border-color:transparent; }
-.segmented button.on{ background:var(--grad); color:#fff; }
+.segmented button.on{ background:var(--grad); color:var(--on-gold); }
 .tab.on{ border-bottom-color:var(--gold); }
 
 /* ————— rows ————— */
@@ -558,7 +593,7 @@ td{ border-bottom:1px solid var(--line-soft); }
     box-shadow:var(--shadow); gap:2px; justify-content:space-around; }
   .tab{ padding:9px 10px; border-bottom:none; border-radius:999px; font-size:11.5px;
     letter-spacing:-.01em; }
-  .tab.on{ background:var(--grad); color:#fff; }
+  .tab.on{ background:var(--grad); color:var(--on-gold); }
   /* the flag count becomes a dot so four tabs fit without scrolling */
   .tab .count{ margin-left:5px; font-size:0; }
   .tab .count::before{ content:"\2022"; font-size:13px; }
@@ -665,6 +700,19 @@ td{ border-bottom:1px solid var(--line-soft); }
 
   <!-- Admin · partners -->
   <div class="view" id="view-resellers">
+    <section style="margin-top:26px">
+      <div class="section-head">
+        <h2>Leaderboard</h2>
+        <span class="section-note" id="lbNote"></span>
+      </div>
+      <div class="panel"><div class="lb" id="lbList"></div></div>
+      <div class="section-note" style="margin-top:9px">
+        Momentum compares a partner's share of sell-in this month with their share across the year.
+      </div>
+    </section>
+
+    <section>
+      <div class="section-head"><h2>All partners</h2></div>
     <div class="controls">
       <div class="chips" id="chips"></div>
       <span class="spacer"></span>
@@ -687,6 +735,8 @@ td{ border-bottom:1px solid var(--line-soft); }
       </table>
       <div class="empty" id="emptyState" hidden>No partners match <b id="emptyTerm"></b>. Clear the search or choose another filter.</div>
     </div>
+    </section>
+
     <section>
       <div class="section-head"><h2>Revenue by partner</h2><span class="section-note" id="resNote"></span></div>
       <div class="panel chart-panel"><canvas id="resellerChart" height="250"></canvas></div>
@@ -961,37 +1011,37 @@ const fragrances = [
 /* Partner revenue sums to the reseller channel for each period. */
 const resellers = [
   { name:'Maison Lumière', region:'Makati, Metro Manila', tier:'Gold', sellThrough:82, stock:340,
-    rev:{mtd:792000,qtd:2210000,ytd:5540000}, compliance:'Clear', status:'Active',
+    rev:{mtd:742000,qtd:2150000,ytd:5540000}, compliance:'Clear', status:'Active',
     since:2021, renewal:'March 2027', doors:4, margin:.42, terms:'Net 45',
     contact:'Isabel Reyes · Buying director', email:'isabel@maisonlumiere.ph', phone:'9178124471', market:'Philippines', lat:14.55, lon:121.02,
     top:[['Ambre Vermeil',148],['Noir Absolu',96],['Fleur de Minuit',74],['Oud Royale',31]] },
   { name:'Velvet & Vine', region:'Dubai, UAE', tier:'Gold', sellThrough:91, stock:48,
-    rev:{mtd:706000,qtd:1968000,ytd:4930000}, compliance:'Clear', status:'Low stock',
+    rev:{mtd:792000,qtd:2120000,ytd:4930000}, compliance:'Clear', status:'Low stock',
     since:2020, renewal:'June 2027', doors:2, margin:.44, terms:'Net 60',
     contact:'Nadia Al-Rashid · Retail buyer', email:'nadia@velvetvine.ae', phone:'9176302288', market:'UAE', lat:25.2, lon:55.27,
     top:[['Oud Royale',77],['Noir Absolu',69],['Ambre Vermeil',44],['Fleur de Minuit',18]] },
   { name:'Scentiment Co.', region:'Cebu City, Cebu', tier:'Gold', sellThrough:74, stock:210,
-    rev:{mtd:624000,qtd:1742000,ytd:4368000}, compliance:'Clear', status:'Active',
+    rev:{mtd:690000,qtd:1880000,ytd:4368000}, compliance:'Clear', status:'Active',
     since:2022, renewal:'August 2027', doors:3, margin:.40, terms:'Net 45',
     contact:'Marco Villanueva · Owner', email:'marco@scentiment.ph', phone:'9184479032', market:'Philippines', lat:10.32, lon:123.89,
     top:[['Fleur de Minuit',112],['Ambre Vermeil',88],['Cendre Blanche',52],['Noir Absolu',27]] },
   { name:'Aroma District', region:'Singapore', tier:'Silver', sellThrough:68, stock:96,
-    rev:{mtd:455000,qtd:1268000,ytd:3178000}, compliance:'1 pricing flag', status:'Review',
+    rev:{mtd:402000,qtd:1180000,ytd:3178000}, compliance:'1 pricing flag', status:'Review',
     since:2023, renewal:'January 2027', doors:2, margin:.38, terms:'Net 30',
     contact:'Wei Lin Tan · Category lead', email:'weilin@aromadistrict.sg', phone:'9172056614', market:'Singapore', lat:1.3, lon:103.85,
     top:[['Oud Royale',64],['Noir Absolu',58],['Ambre Vermeil',41],['Cendre Blanche',12]] },
   { name:'The Parfumerie', region:'Quezon City, Metro Manila', tier:'Silver', sellThrough:55, stock:180,
-    rev:{mtd:311000,qtd:868000,ytd:2176000}, compliance:'Clear', status:'Active',
+    rev:{mtd:268000,qtd:800000,ytd:2176000}, compliance:'Clear', status:'Active',
     since:2024, renewal:'November 2026', doors:1, margin:.36, terms:'Net 30',
     contact:'Grace Domingo · Store manager', email:'grace@theparfumerie.ph', phone:'9163387720', market:'Philippines', lat:14.68, lon:121.05,
     top:[['Fleur de Minuit',58],['Cendre Blanche',44],['Ambre Vermeil',22],['Noir Absolu',9]] },
   { name:'Nordlys Beauty', region:'Copenhagen, Denmark', tier:'Silver', sellThrough:61, stock:74,
-    rev:{mtd:292000,qtd:814000,ytd:2040000}, compliance:'Clear', status:'Renewal due',
+    rev:{mtd:296000,qtd:830000,ytd:2040000}, compliance:'Clear', status:'Renewal due',
     since:2022, renewal:'October 2026', doors:2, margin:.39, terms:'Net 45',
     contact:'Sofie Bergström · Head of buying', email:'sofie@nordlys.dk', phone:'9157741908', market:'Denmark', lat:55.68, lon:12.57,
     top:[['Fleur de Minuit',49],['Cendre Blanche',37],['Noir Absolu',24],['Ambre Vermeil',11]] },
   { name:'Essenza Manila', region:'BGC, Taguig', tier:'Silver', sellThrough:39, stock:260,
-    rev:{mtd:217000,qtd:612000,ytd:1550000}, compliance:'2 pricing flags', status:'Review',
+    rev:{mtd:207000,qtd:522000,ytd:1550000}, compliance:'2 pricing flags', status:'Review',
     since:2024, renewal:'February 2027', doors:1, margin:.36, terms:'Net 30',
     contact:'Paolo Cruz · Founder', email:'paolo@essenza.ph', phone:'9195614023', market:'Philippines', lat:14.55, lon:121.05,
     top:[['Cendre Blanche',36],['Fleur de Minuit',28],['Ambre Vermeil',14],['Oud Royale',5]] }
@@ -1134,7 +1184,7 @@ function renderLedger(){
       <div class="tile lead">
         <div class="k-label">Revenue · ${esc(p.short)}</div>
         <div class="k-value num">${peso(total)}</div>
-        <div class="k-foot"><span class="k-note pos">+${p.delta}% ${esc(p.deltaVs)}</span>${sparkline(revSpark, 'rgba(255,255,255,.9)')}</div>
+        <div class="k-foot"><span class="k-note pos">+${p.delta}% ${esc(p.deltaVs)}</span>${sparkline(revSpark, 'rgba(29,22,8,.82)')}</div>
       </div>
       <div class="tile">
         <div class="k-label">Orders</div>
@@ -1167,7 +1217,7 @@ function renderLedger(){
       <div class="tile lead">
         <div class="k-label">My sell-in · ${esc(p.short)}</div>
         <div class="k-value num">${peso(gross)}</div>
-        <div class="k-foot"><span class="k-note">${rank} of ${resellers.length} partners by volume</span>${sparkline(monthly, 'rgba(255,255,255,.9)')}</div>
+        <div class="k-foot"><span class="k-note">${rank} of ${resellers.length} partners by volume</span>${sparkline(monthly, 'rgba(29,22,8,.82)')}</div>
       </div>
       <div class="tile">
         <div class="k-label">My margin earned</div>
@@ -1929,7 +1979,10 @@ function removePartner(name){
   toast(name + ' removed');
 }
 
-$('addPartner').addEventListener('click', openAddPartner);
+$('addPartner').addEventListener('click', () => {
+  if (!isAdmin){ toast('Sign in as admin to add a partner'); return openAdmin(); }
+  openAddPartner();
+});
 $('addClose').addEventListener('click', closeAddPartner);
 $('addCancel').addEventListener('click', closeAddPartner);
 $('addScrim').addEventListener('click', closeAddPartner);
@@ -1944,6 +1997,51 @@ document.addEventListener('keydown', e => {
   if (e.key === 'Escape' && !$('addModal').hidden) closeAddPartner();
 });
 
+
+/* ═══════════════════════════════════════════════════════════
+   Leaderboard — partners ranked by sell-in for the chosen
+   period, with momentum: their share of partner revenue this
+   month against their share across the year. A partner pulling
+   more weight lately reads as rising, and vice versa.
+   ═══════════════════════════════════════════════════════════ */
+function renderLeaderboard(){
+  const rows = resellers.slice().sort((a,b) => b.rev[period] - a.rev[period]);
+  const total = sum(rows.map(r => r.rev[period])) || 1;
+  const mtdTotal = sum(resellers.map(r => r.rev.mtd)) || 1;
+  const ytdTotal = sum(resellers.map(r => r.rev.ytd)) || 1;
+
+  document.getElementById('lbNote').textContent =
+    P().label + ' · ' + rows.length + ' partners by sell-in';
+
+  document.getElementById('lbList').innerHTML = rows.map((r,i) => {
+    const share = r.rev[period] / total * 100;
+    const move = (r.rev.mtd / mtdTotal - r.rev.ytd / ytdTotal) * 100;
+    const cls = move > 0.35 ? 'up' : move < -0.35 ? 'down' : 'flat';
+    const label = cls === 'flat' ? 'steady'
+      : (cls === 'up' ? '▲ ' : '▼ ') + Math.abs(move).toFixed(1) + ' pts';
+    return `<button class="lb-row${i < 3 ? ' top' + (i+1) : ''}" data-partner="${esc(r.name)}">
+      <span class="lb-rank">${i+1}</span>
+      <span>
+        <span class="lb-name">${esc(r.name)}</span>
+        <span class="lb-sub">${esc(r.region)} · ${esc(r.tier)}</span>
+      </span>
+      <span class="lb-bar">
+        <span class="track"><span class="fill" style="width:${share.toFixed(1)}%"></span></span>
+        ${share.toFixed(1)}%
+      </span>
+      <span class="lb-val">
+        <b>${esc(peso(r.rev[period]))}</b>
+        <span>${r.sellThrough}% sell-through</span>
+      </span>
+      <span class="lb-move ${cls}">${label}</span>
+    </button>`;
+  }).join('');
+}
+document.getElementById('lbList').addEventListener('click', e => {
+  const b = e.target.closest('[data-partner]');
+  if (b) openDrawer(b.dataset.partner);
+});
+
 /* ═══════════════════════════════════════════════════════════
    Render + wiring
    ═══════════════════════════════════════════════════════════ */
@@ -1951,7 +2049,7 @@ function renderAll(){
   renderLedger();
   if (session.role === 'admin'){
     renderMap(); renderFragrances(); renderChips(); renderResellers();
-    renderInventory(); renderCompliance();
+    renderLeaderboard(); renderInventory(); renderCompliance();
   } else {
     renderMine(); renderStatement(); renderMyCases();
   }
@@ -2041,7 +2139,10 @@ function applyMode(){
     document.getElementById('bannerText').innerHTML =
       `Viewing <b>${esc(r.name)}</b> — the dashboard this partner sees. ${esc(r.region)}.`;
   }
-  document.getElementById('addPartner').hidden = !isAdmin;
+  const add = document.getElementById('addPartner');
+  add.hidden = false;                             // always offered, gated on use
+  add.textContent = isAdmin ? 'Add partner' : 'Add partner';
+  add.classList.toggle('locked', !isAdmin);
   document.getElementById('adminBtn').textContent = isAdmin ? 'Admin unlocked' : 'Admin';
   document.getElementById('adminBtn').classList.toggle('on', isAdmin);
 
