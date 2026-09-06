@@ -1,0 +1,2000 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Vermonix Partner Portal</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=Jost:wght@300;400;500&display=swap">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.4/chart.umd.min.js"></script>
+<style>
+/* ————————————————————————————————————————————
+   Vermonix — partner portal. Dark-first (Night);
+   Day applies on a light OS or an explicit stamp.
+   ———————————————————————————————————————————— */
+:root{
+  --bg:#0C0B09; --panel:#14120E; --panel-soft:#1C1913; --raise:#221E17;
+  --line:#2C2820; --line-soft:#221F19;
+  --text:#F2EDE3; --muted:#9B9282; --faint:#6E6759;
+  --gold:#C9A24B; --gold-soft:#8A6F3B; --gold-wash:rgba(201,162,75,.10);
+  --accent2:#7D7466;
+  --ok:#7FB08A; --warn:#D9A441; --crit:#C96B5E;
+  --ok-wash:rgba(127,176,138,.14); --warn-wash:rgba(217,164,65,.14); --crit-wash:rgba(201,107,94,.14);
+  --on-gold:#0C0B09;
+  --shadow:0 18px 40px rgba(0,0,0,.55);
+}
+@media (prefers-color-scheme: light){
+  :root:not([data-theme="dark"]){
+    --bg:#FDFCF9; --panel:#F7F4EC; --panel-soft:#F0EBDF; --raise:#FFFFFF;
+    --line:#E2DCCC; --line-soft:#EAE4D6;
+    --text:#191510; --muted:#7E7566; --faint:#A29981;
+    --gold:#A87F1F; --gold-soft:#C9A24B; --gold-wash:rgba(168,127,31,.09);
+    --accent2:#8C8474;
+    --ok:#4E8A5E; --warn:#A97C1B; --crit:#B4523F;
+    --ok-wash:rgba(78,138,94,.12); --warn-wash:rgba(169,124,27,.12); --crit-wash:rgba(180,82,63,.12);
+    --on-gold:#FDFCF9;
+    --shadow:0 18px 40px rgba(25,21,16,.14);
+  }
+}
+:root[data-theme="light"]{
+  --bg:#FDFCF9; --panel:#F7F4EC; --panel-soft:#F0EBDF; --raise:#FFFFFF;
+  --line:#E2DCCC; --line-soft:#EAE4D6;
+  --text:#191510; --muted:#7E7566; --faint:#A29981;
+  --gold:#A87F1F; --gold-soft:#C9A24B; --gold-wash:rgba(168,127,31,.09);
+  --accent2:#8C8474;
+  --ok:#4E8A5E; --warn:#A97C1B; --crit:#B4523F;
+  --ok-wash:rgba(78,138,94,.12); --warn-wash:rgba(169,124,27,.12); --crit-wash:rgba(180,82,63,.12);
+  --on-gold:#FDFCF9;
+  --shadow:0 18px 40px rgba(25,21,16,.14);
+}
+
+*{ box-sizing:border-box; }
+/* The attribute must beat class rules like .gate{display:grid} and
+   .gate-form{display:flex}, or hidden panes stay on screen. */
+[hidden]{ display:none !important; }
+html{ -webkit-text-size-adjust:100%; }
+body{ margin:0; background:var(--bg); color:var(--text);
+  font-family:'Jost',system-ui,-apple-system,'Segoe UI',sans-serif; font-size:14px; line-height:1.5; }
+button,input,select{ font:inherit; color:inherit; }
+:focus-visible{ outline:2px solid var(--gold); outline-offset:2px; }
+.num{ font-variant-numeric:tabular-nums; }
+
+/* ————— Sign in ————— */
+.gate{ min-height:100vh; display:grid; place-items:center; padding:40px 20px; }
+.gate-card{ width:min(420px,100%); display:flex; flex-direction:column; gap:22px; }
+.gate-brand{ text-align:center; }
+.gate-brand .wordmark{ font-size:34px; }
+.gate-brand p{ color:var(--muted); font-family:'Cormorant Garamond',Georgia,serif;
+  font-style:italic; font-size:16px; margin:8px 0 0; }
+.gate-form{ background:var(--panel); border:1px solid var(--line); padding:24px; display:flex; flex-direction:column; gap:14px; }
+.field{ display:flex; flex-direction:column; gap:6px; }
+.field label{ color:var(--muted); font-size:11.5px; letter-spacing:.09em; text-transform:uppercase; }
+.field input{ background:var(--bg); border:1px solid var(--line); padding:10px 12px; color:var(--text); font-size:14px; }
+.field input::placeholder{ color:var(--faint); }
+.primary{ background:var(--gold); color:var(--on-gold); border:none; padding:11px 16px; cursor:pointer;
+  font-size:13.5px; letter-spacing:.06em; text-transform:uppercase; }
+.primary:hover{ background:var(--gold-soft); }
+.gate-error{ color:var(--crit); font-size:13px; min-height:19px; }
+.gate-note{ border:1px solid var(--line); padding:16px 18px; display:flex; flex-direction:column; gap:9px; }
+.gate-note h4{ margin:0; color:var(--muted); font-size:11.5px; letter-spacing:.09em; text-transform:uppercase; font-weight:400; }
+.cred{ display:flex; justify-content:space-between; gap:14px; font-size:13px; border-top:1px solid var(--line-soft); padding-top:8px; }
+.cred:first-of-type{ border-top:none; padding-top:0; }
+.cred code{ font-family:ui-monospace,SFMono-Regular,Menlo,monospace; font-size:12px; color:var(--gold); }
+.warn-strip{ background:var(--warn-wash); border:1px solid var(--warn); color:var(--text);
+  padding:11px 14px; font-size:12.5px; }
+.warn-strip b{ color:var(--warn); font-weight:400; }
+.phone-row{ display:flex; align-items:stretch; border:1px solid var(--line); background:var(--bg); }
+.phone-row .cc{ display:flex; align-items:center; padding:0 12px; color:var(--muted);
+  border-right:1px solid var(--line); font-size:14px; letter-spacing:.04em; }
+.phone-row input{ border:none; background:none; flex:1; padding:10px 12px; font-size:15px;
+  letter-spacing:.08em; font-variant-numeric:tabular-nums; }
+.hint{ color:var(--faint); font-size:12px; }
+.code-row{ display:flex; gap:8px; }
+.code-row input{ flex:1; min-width:0; background:var(--bg); border:1px solid var(--line);
+  padding:12px 0; text-align:center; font-size:20px; font-family:'Cormorant Garamond',Georgia,serif;
+  font-variant-numeric:tabular-nums; }
+.code-row input:focus-visible{ border-color:var(--gold); }
+.code-row input.filled{ border-color:var(--gold-soft); color:var(--gold); }
+.code-foot{ display:flex; justify-content:space-between; gap:12px; }
+.linkish{ background:none; border:none; cursor:pointer; color:var(--muted);
+  font-size:12.5px; padding:0; text-decoration:underline; text-underline-offset:3px; }
+.linkish:hover{ color:var(--text); }
+.linkish:disabled{ color:var(--faint); cursor:default; text-decoration:none; }
+.sent-to{ color:var(--text); }
+.demo-code{ font-family:'Cormorant Garamond',Georgia,serif; font-size:26px; letter-spacing:.24em;
+  color:var(--gold); font-variant-numeric:tabular-nums; }
+
+/* ————— Open access furniture ————— */
+.who{ display:flex; align-items:center; gap:8px; font-size:13px; color:var(--muted); }
+.who span{ font-size:11.5px; letter-spacing:.08em; text-transform:uppercase; }
+.viewas{ background:var(--panel); border:1px solid var(--line); color:var(--text);
+  font-size:13px; padding:6px 10px; max-width:220px; }
+.ghost.on{ color:var(--gold); border-color:var(--gold-soft); }
+.banner{ display:flex; align-items:center; justify-content:space-between; gap:14px; flex-wrap:wrap;
+  background:var(--gold-wash); border:1px solid var(--gold-soft); padding:11px 16px; margin-bottom:16px;
+  font-size:13.5px; }
+.banner b{ font-weight:400; font-family:'Cormorant Garamond',Georgia,serif; font-size:17px; }
+.modal.narrow{ width:min(420px,calc(100vw - 32px)); }
+.site-foot{ max-width:1220px; margin:0 auto; padding:22px 32px 40px; display:flex;
+  justify-content:space-between; gap:16px; flex-wrap:wrap;
+  border-top:1px solid var(--line); color:var(--faint); font-size:12.5px; }
+.site-foot b{ font-weight:400; color:var(--muted); }
+
+/* ————— Add partner ————— */
+.modal-scrim{ position:fixed; inset:0; background:rgba(0,0,0,.55); z-index:60; }
+.modal{ position:fixed; z-index:61; top:50%; left:50%; transform:translate(-50%,-50%);
+  width:min(720px,calc(100vw - 32px)); max-height:calc(100vh - 48px); overflow-y:auto;
+  background:var(--bg); border:1px solid var(--line); box-shadow:var(--shadow); }
+.modal-head{ display:flex; justify-content:space-between; align-items:flex-start; gap:16px;
+  padding:22px 26px 16px; border-bottom:1px solid var(--line); position:sticky; top:0; background:var(--bg); }
+.modal-head h3{ font-family:'Cormorant Garamond',Georgia,serif; font-size:24px; font-weight:500; margin:0 0 4px; }
+.modal-body{ padding:20px 26px 26px; display:flex; flex-direction:column; gap:20px; }
+.form-sec{ display:flex; flex-direction:column; gap:12px; }
+.form-sec h6{ margin:0; color:var(--muted); font-size:11px; font-weight:400; letter-spacing:.09em;
+  text-transform:uppercase; border-bottom:1px solid var(--line-soft); padding-bottom:7px; }
+.form-grid{ display:grid; grid-template-columns:1fr 1fr; gap:12px 16px; }
+.form-grid .wide{ grid-column:1 / -1; }
+.f label{ display:block; color:var(--muted); font-size:11.5px; letter-spacing:.05em; margin-bottom:5px; }
+.f input,.f select{ width:100%; background:var(--panel); border:1px solid var(--line);
+  padding:9px 11px; color:var(--text); font-size:13.5px; }
+.f input:invalid{ border-color:var(--line); }
+.f .unit{ display:flex; align-items:stretch; border:1px solid var(--line); background:var(--panel); }
+.f .unit span{ display:flex; align-items:center; padding:0 10px; color:var(--muted); font-size:13px;
+  border-right:1px solid var(--line); }
+.f .unit input{ border:none; background:none; }
+.f .hint{ color:var(--faint); font-size:11.5px; margin-top:4px; }
+.form-error{ color:var(--crit); font-size:13px; min-height:19px; }
+.modal-foot{ display:flex; justify-content:flex-end; gap:10px; align-items:center; flex-wrap:wrap; }
+.modal-foot .spacer{ flex:1 1 auto; }
+.added-note{ background:var(--ok-wash); border:1px solid var(--ok); color:var(--text);
+  padding:12px 15px; font-size:13px; }
+.added-note b{ font-weight:400; color:var(--ok); }
+@media (max-width:640px){ .form-grid{ grid-template-columns:1fr; } }
+
+/* ————— Partner map ————— */
+/* Cap the map's width so a portrait country doesn't make the panel
+   900px tall; centre the pair inside the panel. */
+.map-grid{ display:grid; grid-template-columns:minmax(300px,455px) minmax(270px,350px);
+  justify-content:center; }
+.map-wrap{ position:relative; background:var(--panel); overflow:hidden; }
+/* The country is taller than it is wide, so the panel is too. */
+.map-svg{ display:block; width:100%; aspect-ratio:72/100; }
+.map-side{ border-left:1px solid var(--line); display:flex; flex-direction:column; }
+.map-side h5{ margin:0; padding:13px 16px; color:var(--muted); font-size:11px; font-weight:400;
+  letter-spacing:.09em; text-transform:uppercase; border-bottom:1px solid var(--line); }
+.side-row{ display:flex; justify-content:space-between; align-items:baseline; gap:12px; width:100%;
+  padding:12px 16px; background:none; border:none; border-bottom:1px solid var(--line-soft);
+  text-align:left; cursor:pointer; }
+.side-row:hover{ background:var(--panel-soft); }
+.side-row .sr-name{ font-family:'Cormorant Garamond',Georgia,serif; font-size:17px; display:block; }
+.side-row .sr-city{ color:var(--faint); font-size:12px; }
+.side-row .sr-rev{ font-family:'Cormorant Garamond',Georgia,serif; font-size:16px; white-space:nowrap;
+  font-variant-numeric:tabular-nums; }
+.side-row .sr-status{ display:block; font-size:11.5px; margin-top:3px; }
+.pin.hot .pin-dot{ box-shadow:0 0 0 9px color-mix(in srgb, currentColor 26%, transparent); }
+/* Land needs to read against the ocean without shouting: a warm
+   tint of the brand gold over the panel, with a lit coastline.
+   Plain values first, so browsers without color-mix still work. */
+.map-land{ fill-rule:evenodd;          /* rings are emitted without winding control */
+  fill:var(--raise); fill:color-mix(in srgb, var(--gold) 9%, var(--panel-soft));
+  stroke:var(--gold-soft); stroke:color-mix(in srgb, var(--gold) 40%, var(--line));
+  stroke-width:1; vector-effect:non-scaling-stroke; }
+.map-grat{ stroke:var(--line-soft); stroke-width:1; vector-effect:non-scaling-stroke; opacity:.4; fill:none; }
+.pin{ position:absolute; transform:translate(-50%,-50%); background:none; border:none; padding:0;
+  cursor:pointer; display:flex; align-items:center; gap:8px; white-space:nowrap; }
+.pin-dot{ position:relative; border-radius:50%; border:1.5px solid var(--bg); flex:none;
+  box-shadow:0 0 0 4px color-mix(in srgb, currentColor 18%, transparent); }
+.pin:hover .pin-dot,.pin:focus-visible .pin-dot{ box-shadow:0 0 0 7px color-mix(in srgb, currentColor 24%, transparent); }
+.pin-label{ background:var(--bg); border:1px solid var(--line); color:var(--text);
+  padding:3px 9px; font-size:12px; display:flex; gap:8px; align-items:baseline; }
+.pin-label b{ font-weight:400; }
+.pin-label span{ color:var(--muted); font-variant-numeric:tabular-nums; }
+.pin.left{ flex-direction:row-reverse; }
+.pin-cluster .pin-dot{ display:grid; place-items:center; color:var(--on-gold); background:var(--gold);
+  font-size:12px; font-variant-numeric:tabular-nums; border-color:var(--bg); }
+.pin-pop{ position:absolute; z-index:6; transform:translate(-50%,14px); min-width:236px;
+  background:var(--bg); border:1px solid var(--line); box-shadow:var(--shadow); }
+.pin-pop h5{ margin:0; padding:9px 13px; color:var(--muted); font-size:11px; font-weight:400;
+  letter-spacing:.09em; text-transform:uppercase; border-bottom:1px solid var(--line); }
+.pin-pop button{ display:flex; justify-content:space-between; align-items:baseline; gap:14px;
+  width:100%; padding:9px 13px; background:none; border:none; border-top:1px solid var(--line-soft);
+  text-align:left; cursor:pointer; }
+.pin-pop button:first-of-type{ border-top:none; }
+.pin-pop button:hover{ background:var(--panel-soft); }
+.pin-pop .pp-name{ font-family:'Cormorant Garamond',Georgia,serif; font-size:16px; }
+.pin-pop .pp-rev{ color:var(--muted); font-size:12.5px; font-variant-numeric:tabular-nums; }
+.map-controls{ position:absolute; top:12px; left:12px; display:flex; gap:6px; flex-wrap:wrap; }
+.map-legend{ position:absolute; right:12px; bottom:12px; display:flex; gap:14px; flex-wrap:wrap;
+  background:color-mix(in srgb, var(--panel) 88%, transparent); border:1px solid var(--line);
+  padding:7px 12px; font-size:11.5px; color:var(--muted); }
+.map-legend i{ width:8px; height:8px; border-radius:50%; display:inline-block; margin-right:6px; }
+.map-foot{ display:flex; justify-content:space-between; gap:12px; flex-wrap:wrap;
+  padding:12px 16px; border-top:1px solid var(--line); color:var(--faint); font-size:12.5px; }
+@media (max-width:860px){
+  .map-grid{ grid-template-columns:1fr; }
+  .map-side{ border-left:none; border-top:1px solid var(--line); }
+}
+@media (max-width:640px){
+  .map-svg{ aspect-ratio:4/5; }
+  .pin-label{ display:none; }
+  .map-legend{ display:none; }
+}
+
+/* ————— Chrome ————— */
+header{ border-bottom:1px solid var(--line); padding:18px 32px 16px;
+  display:flex; align-items:flex-end; justify-content:space-between; flex-wrap:wrap; gap:16px; }
+.brand{ display:flex; align-items:baseline; flex-wrap:wrap; gap:14px; }
+.wordmark{ font-family:'Cormorant Garamond',Georgia,serif; font-weight:500;
+  letter-spacing:.15em; color:var(--gold); line-height:1; font-size:28px; }
+.tagline{ font-family:'Cormorant Garamond',Georgia,serif; font-style:italic; color:var(--muted); font-size:16px; }
+.head-right{ display:flex; align-items:center; gap:12px; flex-wrap:wrap; }
+.who{ display:flex; align-items:center; gap:9px; font-size:13px; color:var(--muted); }
+.who b{ font-weight:400; color:var(--text); }
+.stamp{ color:var(--faint); font-size:12.5px; letter-spacing:.02em; }
+.segmented{ display:flex; border:1px solid var(--line); border-radius:999px; overflow:hidden; background:var(--panel); }
+.segmented button{ background:none; border:none; cursor:pointer; padding:6px 15px; color:var(--muted);
+  font-size:12.5px; letter-spacing:.05em; }
+.segmented button.on{ background:var(--gold); color:var(--on-gold); }
+.segmented button:not(.on):hover{ color:var(--text); }
+
+nav{ padding:0 32px; border-bottom:1px solid var(--line); display:flex; gap:30px; overflow-x:auto; }
+.tab{ background:none; border:none; cursor:pointer; padding:12px 0 10px; color:var(--muted);
+  font-size:14px; border-bottom:2px solid transparent; white-space:nowrap; }
+.tab[hidden]{ display:none; }
+.tab:hover{ color:var(--text); }
+.tab.on{ color:var(--text); border-bottom-color:var(--gold); }
+.tab .count{ color:var(--crit); font-size:12px; margin-left:6px; }
+
+main{ padding:24px 32px 64px; max-width:1220px; margin:0 auto; }
+.view{ display:none; } .view.on{ display:block; }
+section{ margin-top:36px; }
+h2{ font-family:'Cormorant Garamond',Georgia,serif; font-size:23px; font-weight:500; margin:0; text-wrap:balance; }
+.section-head{ display:flex; justify-content:space-between; align-items:baseline; gap:12px;
+  margin-bottom:14px; flex-wrap:wrap; }
+.section-note{ color:var(--faint); font-size:12.5px; }
+
+/* ————— Ledger ————— */
+.ledger{ display:grid; grid-template-columns:repeat(auto-fit,minmax(196px,1fr));
+  border-top:1px solid var(--line); border-bottom:1px solid var(--line); }
+.tile{ padding:16px 20px 14px; border-left:1px solid var(--line-soft); display:flex; flex-direction:column; gap:6px; }
+.tile:first-child{ border-left:none; }
+.k-label{ color:var(--muted); font-size:11.5px; letter-spacing:.09em; text-transform:uppercase; }
+.k-value{ font-family:'Cormorant Garamond',Georgia,serif; font-size:31px; line-height:1; }
+.k-foot{ display:flex; align-items:center; justify-content:space-between; gap:10px; }
+.k-note{ color:var(--muted); font-size:12.5px; }
+.k-note.pos{ color:var(--ok); } .k-note.neg{ color:var(--crit); }
+.tile.alert .k-value,.tile.alert .k-note{ color:var(--crit); }
+.tile.lead .k-value{ color:var(--gold); }
+.spark{ display:block; width:96px; height:26px; flex:none; }
+
+/* ————— Panels, lists ————— */
+.panel{ background:var(--panel); border:1px solid var(--line); }
+.chart-panel{ padding:18px 14px 10px; }
+.chart-panel canvas{ max-height:290px; }
+.chart-fallback{ display:none; padding:26px 20px; color:var(--muted); font-size:13px; text-align:center; }
+.chart-panel.offline canvas{ display:none; }
+.chart-panel.offline .chart-fallback{ display:block; }
+.legend{ display:flex; gap:18px; font-size:13px; color:var(--muted); flex-wrap:wrap; }
+.dot{ display:inline-block; width:9px; height:9px; border-radius:99px; margin-right:7px; }
+.dot-gold{ background:var(--gold); } .dot-2{ background:var(--accent2); }
+
+.list{ border:1px solid var(--line); }
+.frag{ display:grid; grid-template-columns:2.1fr 1.2fr .8fr 1.1fr 1fr .7fr; gap:14px;
+  align-items:center; padding:13px 20px; border-top:1px solid var(--line-soft); }
+.frag:first-child{ border-top:none; }
+.frag:hover{ background:var(--panel-soft); }
+.frag-name{ font-family:'Cormorant Garamond',Georgia,serif; font-size:19px; line-height:1.2; }
+.frag-sub{ color:var(--faint); font-size:12px; }
+.frag-fam{ color:var(--muted); font-size:13px; }
+.frag-rev{ font-family:'Cormorant Garamond',Georgia,serif; font-size:18px; }
+.frag .growth{ text-align:right; font-size:13.5px; }
+.up{ color:var(--ok); } .down{ color:var(--crit); }
+.share{ display:flex; align-items:center; gap:9px; color:var(--muted); font-size:12.5px; }
+.track{ flex:1; height:3px; background:var(--line); min-width:40px; }
+.fill{ display:block; height:100%; background:var(--gold); }
+
+/* ————— Controls ————— */
+.controls{ display:flex; gap:10px; align-items:center; margin:22px 0 16px; flex-wrap:wrap; }
+.chips{ display:flex; gap:7px; flex-wrap:wrap; }
+.chip{ background:var(--panel); border:1px solid var(--line); border-radius:999px; cursor:pointer;
+  color:var(--muted); font-size:12.5px; padding:5px 14px; }
+.chip:hover{ color:var(--text); }
+.chip.on{ color:var(--on-gold); background:var(--gold); border-color:var(--gold); }
+.chip .n{ opacity:.7; margin-left:5px; }
+.search{ background:var(--panel); border:1px solid var(--line); padding:6px 12px; width:210px;
+  color:var(--text); font-size:13px; }
+.search::placeholder{ color:var(--faint); }
+.spacer{ flex:1 1 auto; }
+.ghost{ background:none; border:1px solid var(--line); color:var(--muted); cursor:pointer;
+  font-size:12.5px; padding:6px 14px; }
+.ghost:hover{ color:var(--text); border-color:var(--gold-soft); }
+
+/* ————— Tables ————— */
+.table-wrap{ border:1px solid var(--line); overflow-x:auto; }
+table{ width:100%; border-collapse:collapse; min-width:820px; }
+th{ font-weight:400; color:var(--muted); font-size:11.5px; letter-spacing:.07em; text-transform:uppercase;
+  text-align:left; padding:11px 16px; border-bottom:1px solid var(--line); background:var(--panel); white-space:nowrap; }
+th.sortable{ cursor:pointer; user-select:none; }
+th.sortable:hover{ color:var(--text); }
+th .caret{ color:var(--gold); margin-left:5px; }
+td{ padding:12px 16px; border-bottom:1px solid var(--line-soft); }
+tbody tr:last-child td{ border-bottom:none; }
+#resellerBody tr{ cursor:pointer; }
+tbody tr:hover{ background:var(--panel-soft); }
+.r-name{ font-family:'Cormorant Garamond',Georgia,serif; font-size:17px; }
+.r-sub{ color:var(--faint); font-size:12px; }
+.r-num{ font-family:'Cormorant Garamond',Georgia,serif; font-size:17px; }
+.tier{ font-size:12.5px; letter-spacing:.06em; text-transform:uppercase; }
+.tier-gold{ color:var(--gold); } .tier-silver{ color:var(--muted); }
+.meter{ display:flex; align-items:center; gap:10px; min-width:118px; }
+.meter .track{ width:66px; flex:none; height:4px; }
+.pill{ display:inline-flex; align-items:center; gap:6px; padding:3px 10px; border-radius:999px;
+  font-size:12px; white-space:nowrap; }
+.pill::before{ content:""; width:6px; height:6px; border-radius:99px; background:currentColor; }
+.p-ok{ color:var(--ok); background:var(--ok-wash); }
+.p-warn{ color:var(--warn); background:var(--warn-wash); }
+.p-crit{ color:var(--crit); background:var(--crit-wash); }
+.p-gold{ color:var(--gold); background:var(--gold-wash); }
+.p-flat{ color:var(--muted); background:var(--panel-soft); }
+.empty{ padding:34px 20px; color:var(--muted); text-align:center; }
+.empty b{ font-weight:400; color:var(--text); }
+tfoot td{ border-top:1px solid var(--line); border-bottom:none; color:var(--text); background:var(--panel); }
+
+/* ————— Compliance ————— */
+.cases{ display:grid; grid-template-columns:repeat(auto-fill,minmax(320px,1fr)); gap:14px; }
+.case{ border:1px solid var(--line); background:var(--panel); padding:16px 18px 14px 15px;
+  border-left:3px solid var(--sev,var(--muted)); display:flex; flex-direction:column; gap:10px; }
+.case.sev-high{ --sev:var(--crit); } .case.sev-med{ --sev:var(--warn); } .case.sev-low{ --sev:var(--gold-soft); }
+.case.done{ --sev:var(--line); }
+.case-top{ display:flex; justify-content:space-between; gap:10px; align-items:baseline; }
+.case-partner{ font-family:'Cormorant Garamond',Georgia,serif; font-size:18px; }
+.case-id{ color:var(--faint); font-size:11.5px; letter-spacing:.08em; }
+.case-kind{ font-size:12.5px; letter-spacing:.06em; text-transform:uppercase; color:var(--muted); }
+.case-body{ font-size:13.5px; }
+.price-line{ display:flex; gap:20px; flex-wrap:wrap; padding:9px 0;
+  border-top:1px solid var(--line-soft); border-bottom:1px solid var(--line-soft); }
+.price-line div{ display:flex; flex-direction:column; gap:2px; }
+.price-line span:first-child{ color:var(--faint); font-size:11px; letter-spacing:.07em; text-transform:uppercase; }
+.price-line b{ font-family:'Cormorant Garamond',Georgia,serif; font-size:17px; font-weight:500; }
+.case-foot{ display:flex; justify-content:space-between; align-items:center; gap:10px; color:var(--faint); font-size:12px; flex-wrap:wrap; }
+
+/* ————— Drawer ————— */
+.scrim{ position:fixed; inset:0; background:rgba(0,0,0,.5); opacity:0; pointer-events:none;
+  transition:opacity 180ms ease; z-index:40; }
+.scrim.on{ opacity:1; pointer-events:auto; }
+.drawer{ position:fixed; top:0; right:0; height:100%; width:min(430px,100%); background:var(--bg);
+  border-left:1px solid var(--line); box-shadow:var(--shadow); transform:translateX(100%);
+  transition:transform 220ms cubic-bezier(.22,.61,.36,1); z-index:41; overflow-y:auto; }
+.drawer.on{ transform:none; }
+.drawer-head{ display:flex; justify-content:space-between; align-items:flex-start; gap:14px;
+  padding:22px 24px 16px; border-bottom:1px solid var(--line); }
+.drawer h3{ font-family:'Cormorant Garamond',Georgia,serif; font-size:25px; font-weight:500; margin:0 0 4px; }
+.close{ background:none; border:1px solid var(--line); color:var(--muted); cursor:pointer;
+  width:30px; height:30px; line-height:1; flex:none; }
+.close:hover{ color:var(--text); }
+.drawer-body{ padding:20px 24px 40px; display:flex; flex-direction:column; gap:22px; }
+.facts{ display:grid; grid-template-columns:1fr 1fr; gap:16px 18px; }
+.fact span{ display:block; color:var(--faint); font-size:11px; letter-spacing:.08em; text-transform:uppercase; margin-bottom:3px; }
+.fact b{ font-weight:400; font-size:14px; }
+.sub-h{ color:var(--muted); font-size:11.5px; letter-spacing:.09em; text-transform:uppercase; margin-bottom:9px; }
+.mini{ display:flex; justify-content:space-between; gap:12px; padding:8px 0; border-top:1px solid var(--line-soft); font-size:13.5px; }
+.mini:first-of-type{ border-top:none; }
+.mini .m-name{ font-family:'Cormorant Garamond',Georgia,serif; font-size:16px; }
+
+.toast{ position:fixed; left:50%; bottom:26px; transform:translate(-50%,14px); background:var(--raise);
+  border:1px solid var(--line); color:var(--text); padding:10px 18px; font-size:13px;
+  opacity:0; pointer-events:none; transition:opacity 160ms ease, transform 160ms ease; z-index:50; }
+.toast.on{ opacity:1; transform:translate(-50%,0); }
+
+@media (max-width:860px){
+  .frag{ grid-template-columns:1.8fr 1fr 1fr .7fr; }
+  .frag-fam,.frag .share{ display:none; }
+}
+@media (max-width:640px){
+  header,nav,main{ padding-left:18px; padding-right:18px; }
+  .k-value{ font-size:28px; }
+  .spark{ display:none; }
+  .facts{ grid-template-columns:1fr; }
+}
+@media (prefers-reduced-motion: reduce){
+  *{ transition-duration:1ms !important; animation-duration:1ms !important; }
+}
+</style>
+</head>
+<body>
+
+<!-- ————————————— App ————————————— -->
+<div id="app">
+<header>
+  <div class="brand">
+    <span class="wordmark">VERMONIX</span>
+    <span class="tagline" id="brandSub">maison de parfum</span>
+  </div>
+  <div class="head-right">
+    <label class="who" for="viewAs"><span>View</span>
+      <select class="viewas" id="viewAs"></select></label>
+    <div class="segmented" role="group" aria-label="Reporting period">
+      <button data-period="mtd" class="on">Month</button>
+      <button data-period="qtd">Quarter</button>
+      <button data-period="ytd">Year</button>
+    </div>
+    <div class="segmented" role="group" aria-label="Theme">
+      <button id="btnNight">Night</button>
+      <button id="btnDay">Day</button>
+    </div>
+    <button class="ghost" id="adminBtn">Admin</button>
+  </div>
+</header>
+
+<nav id="tabs">
+  <button class="tab" data-view="overview" data-role="admin">Overview</button>
+  <button class="tab" data-view="resellers" data-role="admin">Partners</button>
+  <button class="tab" data-view="inventory" data-role="admin">Inventory</button>
+  <button class="tab" data-view="compliance" data-role="admin" data-admin="yes">Compliance<span class="count" id="tabFlags"></span></button>
+  <button class="tab" data-view="mine" data-role="reseller">Performance</button>
+  <button class="tab" data-view="statement" data-role="reseller">Statements</button>
+  <button class="tab" data-view="mycases" data-role="reseller">Compliance<span class="count" id="tabMyFlags"></span></button>
+</nav>
+
+<main>
+  <div class="banner" id="partnerBanner" hidden>
+    <span id="bannerText"></span>
+    <button class="ghost" id="bannerBack">Back to all partners</button>
+  </div>
+  <div class="stamp" id="stamp" style="margin-bottom:16px"></div>
+  <div class="ledger" id="ledger" aria-label="Key figures"></div>
+
+  <!-- Admin · overview -->
+  <div class="view" id="view-overview">
+    <section style="margin-top:28px">
+      <div class="section-head">
+        <h2>Partner network</h2>
+        <span class="section-note" id="mapNote"></span>
+      </div>
+      <div class="panel">
+        <div class="map-grid">
+        <div class="map-wrap" id="mapWrap">
+          <svg class="map-svg" id="mapSvg" role="img" aria-labelledby="mapTitle">
+            <title id="mapTitle">Map of Vermonix retail partners in the Philippines</title>
+            <g id="mapGrat"></g>
+            <path class="map-land" id="mapLand"></path>
+          </svg>
+          <div class="map-controls" id="mapControls"></div>
+          <div class="map-legend">
+            <span><i style="background:var(--ok)"></i>Active</span>
+            <span><i style="background:var(--warn)"></i>Low stock</span>
+            <span><i style="background:var(--crit)"></i>Under review</span>
+            <span><i style="background:var(--gold)"></i>Renewal due</span>
+          </div>
+        </div>
+        <div class="map-side"><h5>Philippine partners</h5><div id="mapSide"></div></div>
+        </div>
+        <div class="map-foot">
+          <span id="mapSummary"></span>
+          <span>Dot size is sell-in revenue for the period · click a partner for their file</span>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <div class="section-head">
+        <h2>Revenue by channel</h2>
+        <div class="legend">
+          <span><span class="dot dot-gold"></span>Direct to customer</span>
+          <span><span class="dot dot-2"></span>Partners</span>
+        </div>
+      </div>
+      <div class="panel chart-panel"><canvas id="revenueChart" height="290"></canvas></div>
+    </section>
+    <section>
+      <div class="section-head"><h2>Fragrance performance</h2><span class="section-note" id="fragNote"></span></div>
+      <div class="list" id="fragList"></div>
+    </section>
+  </div>
+
+  <!-- Admin · partners -->
+  <div class="view" id="view-resellers">
+    <div class="controls">
+      <div class="chips" id="chips"></div>
+      <span class="spacer"></span>
+      <input class="search" id="search" type="search" placeholder="Search partner or region" aria-label="Search partners">
+      <button class="ghost" id="copyCsv">Copy as CSV</button>
+      <button class="primary" id="addPartner">Add partner</button>
+    </div>
+    <div class="table-wrap">
+      <table id="resellerTable">
+        <thead><tr>
+          <th class="sortable" data-key="name">Partner</th>
+          <th class="sortable" data-key="tier">Tier</th>
+          <th class="sortable" data-key="sellThrough">Sell-through</th>
+          <th class="sortable" data-key="stock">Stock on hand</th>
+          <th class="sortable" data-key="rev">Sell-in revenue</th>
+          <th class="sortable" data-key="renewal">Contract</th>
+          <th class="sortable" data-key="status">Status</th>
+        </tr></thead>
+        <tbody id="resellerBody"></tbody>
+      </table>
+      <div class="empty" id="emptyState" hidden>No partners match <b id="emptyTerm"></b>. Clear the search or choose another filter.</div>
+    </div>
+    <section>
+      <div class="section-head"><h2>Revenue by partner</h2><span class="section-note" id="resNote"></span></div>
+      <div class="panel chart-panel"><canvas id="resellerChart" height="250"></canvas></div>
+    </section>
+  </div>
+
+  <!-- Admin · inventory -->
+  <div class="view" id="view-inventory">
+    <div class="controls">
+      <div class="chips" id="invChips"></div>
+      <span class="spacer"></span>
+      <span class="section-note">Cover = free stock ÷ 4-week average depletion</span>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr>
+          <th>SKU</th><th>Holding</th><th>On hand</th><th>Allocated</th>
+          <th>Weekly depletion</th><th>Weeks of cover</th><th>Action</th>
+        </tr></thead>
+        <tbody id="invBody"></tbody>
+      </table>
+      <div class="empty" id="invEmpty" hidden>Nothing in this band right now.</div>
+    </div>
+    <section>
+      <div class="section-head"><h2>Weeks of cover by SKU</h2>
+        <span class="section-note">Reorder at 4 weeks · maceration adds 6 weeks lead time</span></div>
+      <div class="panel chart-panel"><canvas id="coverChart" height="250"></canvas></div>
+    </section>
+  </div>
+
+  <!-- Admin · compliance -->
+  <div class="view" id="view-compliance">
+    <div class="controls">
+      <div class="chips" id="compChips"></div>
+      <span class="spacer"></span>
+      <span class="section-note">SRP floor = minimum advertised price per territory, set in the distribution agreement</span>
+    </div>
+    <div class="cases" id="caseList"></div>
+    <div class="empty" id="compEmpty" hidden>No cases in this state.</div>
+  </div>
+
+  <!-- Partner · my performance -->
+  <div class="view" id="view-mine">
+    <section style="margin-top:28px">
+      <div class="section-head"><h2>My sell-in, month by month</h2>
+        <span class="section-note" id="mineNote"></span></div>
+      <div class="panel chart-panel"><canvas id="mineChart" height="270"></canvas></div>
+    </section>
+    <section>
+      <div class="section-head"><h2>My top sellers</h2>
+        <span class="section-note">Units sold out of my doors this period</span></div>
+      <div class="list" id="mineList"></div>
+    </section>
+    <section>
+      <div class="section-head"><h2>My account</h2><span class="section-note">Contract terms of record</span></div>
+      <div class="panel" style="padding:22px 24px"><div class="facts" id="mineFacts"></div></div>
+    </section>
+  </div>
+
+  <!-- Partner · statements -->
+  <div class="view" id="view-statement">
+    <div class="controls">
+      <span class="section-note" id="stateNote"></span>
+      <span class="spacer"></span>
+      <button class="ghost" id="copyStatement">Copy as CSV</button>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr>
+          <th>Period</th><th>Gross sell-in</th><th>My margin</th><th>Co-op marketing</th>
+          <th>Net to me</th><th>Payment</th>
+        </tr></thead>
+        <tbody id="stateBody"></tbody>
+        <tfoot id="stateFoot"></tfoot>
+      </table>
+    </div>
+    <section>
+      <div class="section-head"><h2>How this is calculated</h2></div>
+      <div class="panel" style="padding:20px 24px; color:var(--muted); font-size:13.5px; max-width:62ch">
+        Gross sell-in is what you invoiced from Vermonix in the period. Your margin is applied at the
+        contracted rate on the recommended retail price, net of the trade discount already taken at invoice.
+        Co-op marketing is the agreed contribution to campaign assets and testers, deducted at 1.5% of gross.
+        Net to me is what lands in your account on the payment date, subject to your trading terms.
+      </div>
+    </section>
+  </div>
+
+  <!-- Partner · my compliance -->
+  <div class="view" id="view-mycases">
+    <div class="controls">
+      <span class="section-note">Only cases raised on my account are shown here.</span>
+    </div>
+    <div class="cases" id="myCaseList"></div>
+    <div class="empty" id="myCaseEmpty" hidden>No pricing or channel cases on your account. <b>Nothing to action.</b></div>
+  </div>
+</main>
+</div>
+
+<div class="scrim" id="scrim"></div>
+<aside class="drawer" id="drawer" role="dialog" aria-modal="true" aria-labelledby="drawerName" hidden>
+  <div class="drawer-head">
+    <div><h3 id="drawerName"></h3><div class="stamp" id="drawerSub"></div></div>
+    <button class="close" id="drawerClose" aria-label="Close partner detail">✕</button>
+  </div>
+  <div class="drawer-body" id="drawerBody"></div>
+</aside>
+
+<div class="modal-scrim" id="addScrim" hidden></div>
+<div class="modal" id="addModal" role="dialog" aria-modal="true" aria-labelledby="addTitle" hidden>
+  <div class="modal-head">
+    <div>
+      <h3 id="addTitle">Add a retail partner</h3>
+      <div class="stamp">They can sign in to their own dashboard as soon as this is saved.</div>
+    </div>
+    <button class="close" id="addClose" aria-label="Close">✕</button>
+  </div>
+  <form class="modal-body" id="addForm" autocomplete="off">
+    <div class="form-sec">
+      <h6>Account</h6>
+      <div class="form-grid">
+        <div class="f wide"><label for="ap-name">Trading name</label>
+          <input id="ap-name" required maxlength="40" placeholder="Aurora Scents"></div>
+        <div class="f"><label for="ap-tier">Tier</label>
+          <select id="ap-tier"><option>Gold</option><option selected>Silver</option></select></div>
+        <div class="f"><label for="ap-status">Status</label>
+          <select id="ap-status"><option>Active</option><option>Review</option>
+            <option>Low stock</option><option>Renewal due</option></select></div>
+      </div>
+    </div>
+
+    <div class="form-sec">
+      <h6>Where they trade</h6>
+      <div class="form-grid">
+        <div class="f"><label for="ap-city">City</label>
+          <select id="ap-city"></select></div>
+        <div class="f"><label for="ap-region">Shown on the map as</label>
+          <input id="ap-region" required maxlength="48"></div>
+        <div class="f" id="ap-coords" hidden><label for="ap-lat">Latitude</label>
+          <input id="ap-lat" type="number" step="0.01" min="4" max="21" placeholder="7.07"></div>
+        <div class="f" id="ap-coords2" hidden><label for="ap-lon">Longitude</label>
+          <input id="ap-lon" type="number" step="0.01" min="116" max="127" placeholder="125.61"></div>
+        <div class="f"><label for="ap-doors">Doors</label>
+          <input id="ap-doors" type="number" min="1" max="60" value="1" required></div>
+      </div>
+    </div>
+
+    <div class="form-sec">
+      <h6>Trading terms</h6>
+      <div class="form-grid">
+        <div class="f"><label for="ap-margin">Their margin</label>
+          <div class="unit"><span>%</span><input id="ap-margin" type="number" min="20" max="60" value="36" required></div></div>
+        <div class="f"><label for="ap-terms">Payment terms</label>
+          <select id="ap-terms"><option>Net 30</option><option>Net 45</option><option>Net 60</option></select></div>
+        <div class="f"><label for="ap-since">Partner since</label>
+          <input id="ap-since" type="number" min="2010" max="2026" value="2026" required></div>
+        <div class="f"><label for="ap-renewal">Contract renewal</label>
+          <input id="ap-renewal" placeholder="May 2028" required maxlength="20"></div>
+      </div>
+    </div>
+
+    <div class="form-sec">
+      <h6>Opening figures</h6>
+      <div class="form-grid">
+        <div class="f"><label for="ap-mtd">Sell-in this month</label>
+          <div class="unit"><span>₱</span><input id="ap-mtd" type="number" min="1000" step="1000" value="180000" required></div>
+          <div class="hint">Quarter and year fill in from this; edit either if you have the real number.</div></div>
+        <div class="f"><label for="ap-qtd">Sell-in this quarter</label>
+          <div class="unit"><span>₱</span><input id="ap-qtd" type="number" min="1000" step="1000" required></div></div>
+        <div class="f"><label for="ap-ytd">Sell-in year to date</label>
+          <div class="unit"><span>₱</span><input id="ap-ytd" type="number" min="1000" step="1000" required></div></div>
+        <div class="f"><label for="ap-sell">Sell-through</label>
+          <div class="unit"><span>%</span><input id="ap-sell" type="number" min="0" max="100" value="60" required></div></div>
+        <div class="f"><label for="ap-stock">Stock on hand</label>
+          <div class="unit"><span>units</span><input id="ap-stock" type="number" min="0" max="9999" value="150" required></div></div>
+      </div>
+    </div>
+
+    <div class="form-sec">
+      <h6>Contact and portal login</h6>
+      <div class="form-grid">
+        <div class="f"><label for="ap-contact">Contact name</label>
+          <input id="ap-contact" required maxlength="40" placeholder="Ana Salvador"></div>
+        <div class="f"><label for="ap-role">Their role</label>
+          <input id="ap-role" required maxlength="40" value="Owner"></div>
+        <div class="f"><label for="ap-phone">Mobile number</label>
+          <div class="unit"><span>+63</span><input id="ap-phone" inputmode="numeric" placeholder="917 123 4567" required></div>
+          <div class="hint">This is how they sign in — a code is texted to it.</div></div>
+        <div class="f"><label for="ap-email">Email</label>
+          <input id="ap-email" type="email" maxlength="60" placeholder="ana@aurorascents.ph"></div>
+      </div>
+    </div>
+
+    <div class="form-error" id="addError" role="alert"></div>
+    <div class="modal-foot">
+      <span class="spacer"></span>
+      <button type="button" class="ghost" id="addCancel">Cancel</button>
+      <button type="submit" class="primary">Add partner</button>
+    </div>
+  </form>
+</div>
+
+<div class="modal-scrim" id="adminScrim" hidden></div>
+<div class="modal narrow" id="adminModal" role="dialog" aria-modal="true" aria-labelledby="adminTitle" hidden>
+  <div class="modal-head">
+    <div>
+      <h3 id="adminTitle">Admin code</h3>
+      <div class="stamp">Unlocks compliance cases and adding partners.</div>
+    </div>
+    <button class="close" id="adminClose" aria-label="Close">✕</button>
+  </div>
+  <form class="modal-body" id="adminForm" autocomplete="off">
+    <div class="f"><label for="adminCode">Code</label>
+      <input id="adminCode" type="password" placeholder="••••••••••" required></div>
+    <div class="form-error" id="codeError" role="alert"></div>
+    <div class="modal-foot"><span class="spacer"></span>
+      <button type="submit" class="primary">Unlock</button></div>
+  </form>
+</div>
+
+<footer class="site-foot">
+  <span><b>Vermonix</b> is a demonstration build — every partner, figure and case in it is invented.</span>
+  <span>Open to anyone with the link · figures in Philippine pesos</span>
+</footer>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+/* ═══════════════════════════════════════════════════════════
+   DEMO DATA — invented figures, Philippine pesos.
+   Nothing here is real trading data.
+   ═══════════════════════════════════════════════════════════ */
+
+/* Channel revenue, in pesos. Period totals are summed from these
+   series, so every headline figure traces back to the chart. */
+const periods = {
+  mtd: { label:'Month to date', short:'Sep', range:'1 – 30 September 2026', orders:1296, sellThrough:67, target:70,
+    delta:8.4, deltaVs:'vs August',
+    labels:['Sep 1–7','Sep 8–14','Sep 15–21','Sep 22–30'],
+    direct:[512000,566000,604000,688000],
+    reseller:[742000,815000,878000,962000] },
+  qtd: { label:'Quarter to date', short:'Q3', range:'1 July – 30 September 2026', orders:3742, sellThrough:65, target:70,
+    delta:11.6, deltaVs:'vs Q2',
+    labels:['July','August','September'],
+    direct:[1980000,2140000,2370000],
+    reseller:[2905000,3180000,3397000] },
+  ytd: { label:'Year to date', short:'2026', range:'January – September 2026', orders:9412, sellThrough:66, target:70,
+    delta:19.2, deltaVs:'vs same period 2025',
+    labels:['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep'],
+    direct:[1420000,1380000,1610000,1740000,1880000,1920000,1980000,2140000,2370000],
+    reseller:[2050000,1980000,2340000,2480000,2690000,2760000,2905000,3180000,3397000] }
+};
+
+/* Fragrance revenue sums to the period's total revenue. */
+const fragrances = [
+  { name:'Ambre Vermeil',   conc:'Eau de Parfum · 50ml',    family:'Amber woody',  srp:6400,
+    units:{mtd:303,qtd:841,ytd:2116}, rev:{mtd:1942000,qtd:5380000,ytd:13540000},
+    growth:{mtd:12,qtd:16,ytd:24} },
+  { name:'Noir Absolu',     conc:'Parfum · 30ml',           family:'Leather oud',  srp:8700,
+    units:{mtd:161,qtd:445,ytd:1120}, rev:{mtd:1398000,qtd:3870000,ytd:9740000},
+    growth:{mtd:7,qtd:9,ytd:17} },
+  { name:'Fleur de Minuit', conc:'Eau de Parfum · 50ml',    family:'White floral', srp:5800,
+    units:{mtd:208,qtd:576,ytd:1450}, rev:{mtd:1205000,qtd:3340000,ytd:8410000},
+    growth:{mtd:21,qtd:18,ytd:31} },
+  { name:'Oud Royale',      conc:'Extrait de Parfum · 30ml',family:'Rose oud',     srp:10500,
+    units:{mtd:65,qtd:180,ytd:453}, rev:{mtd:682000,qtd:1890000,ytd:4760000},
+    growth:{mtd:9,qtd:6,ytd:14} },
+  { name:'Cendre Blanche',  conc:'Eau de Toilette · 100ml', family:'Smoky iris',   srp:4900,
+    units:{mtd:110,qtd:305,ytd:770}, rev:{mtd:540000,qtd:1492000,ytd:3772000},
+    growth:{mtd:-4,qtd:-6,ytd:3} }
+];
+
+/* Partner revenue sums to the reseller channel for each period. */
+const resellers = [
+  { name:'Maison Lumière', region:'Makati, Metro Manila', tier:'Gold', sellThrough:82, stock:340,
+    rev:{mtd:792000,qtd:2210000,ytd:5540000}, compliance:'Clear', status:'Active',
+    since:2021, renewal:'March 2027', doors:4, margin:.42, terms:'Net 45',
+    contact:'Isabel Reyes · Buying director', email:'isabel@maisonlumiere.ph', phone:'9178124471', market:'Philippines', lat:14.55, lon:121.02,
+    top:[['Ambre Vermeil',148],['Noir Absolu',96],['Fleur de Minuit',74],['Oud Royale',31]] },
+  { name:'Velvet & Vine', region:'Dubai, UAE', tier:'Gold', sellThrough:91, stock:48,
+    rev:{mtd:706000,qtd:1968000,ytd:4930000}, compliance:'Clear', status:'Low stock',
+    since:2020, renewal:'June 2027', doors:2, margin:.44, terms:'Net 60',
+    contact:'Nadia Al-Rashid · Retail buyer', email:'nadia@velvetvine.ae', phone:'9176302288', market:'UAE', lat:25.2, lon:55.27,
+    top:[['Oud Royale',77],['Noir Absolu',69],['Ambre Vermeil',44],['Fleur de Minuit',18]] },
+  { name:'Scentiment Co.', region:'Cebu City, Cebu', tier:'Gold', sellThrough:74, stock:210,
+    rev:{mtd:624000,qtd:1742000,ytd:4368000}, compliance:'Clear', status:'Active',
+    since:2022, renewal:'August 2027', doors:3, margin:.40, terms:'Net 45',
+    contact:'Marco Villanueva · Owner', email:'marco@scentiment.ph', phone:'9184479032', market:'Philippines', lat:10.32, lon:123.89,
+    top:[['Fleur de Minuit',112],['Ambre Vermeil',88],['Cendre Blanche',52],['Noir Absolu',27]] },
+  { name:'Aroma District', region:'Singapore', tier:'Silver', sellThrough:68, stock:96,
+    rev:{mtd:455000,qtd:1268000,ytd:3178000}, compliance:'1 pricing flag', status:'Review',
+    since:2023, renewal:'January 2027', doors:2, margin:.38, terms:'Net 30',
+    contact:'Wei Lin Tan · Category lead', email:'weilin@aromadistrict.sg', phone:'9172056614', market:'Singapore', lat:1.3, lon:103.85,
+    top:[['Oud Royale',64],['Noir Absolu',58],['Ambre Vermeil',41],['Cendre Blanche',12]] },
+  { name:'The Parfumerie', region:'Quezon City, Metro Manila', tier:'Silver', sellThrough:55, stock:180,
+    rev:{mtd:311000,qtd:868000,ytd:2176000}, compliance:'Clear', status:'Active',
+    since:2024, renewal:'November 2026', doors:1, margin:.36, terms:'Net 30',
+    contact:'Grace Domingo · Store manager', email:'grace@theparfumerie.ph', phone:'9163387720', market:'Philippines', lat:14.68, lon:121.05,
+    top:[['Fleur de Minuit',58],['Cendre Blanche',44],['Ambre Vermeil',22],['Noir Absolu',9]] },
+  { name:'Nordlys Beauty', region:'Copenhagen, Denmark', tier:'Silver', sellThrough:61, stock:74,
+    rev:{mtd:292000,qtd:814000,ytd:2040000}, compliance:'Clear', status:'Renewal due',
+    since:2022, renewal:'October 2026', doors:2, margin:.39, terms:'Net 45',
+    contact:'Sofie Bergström · Head of buying', email:'sofie@nordlys.dk', phone:'9157741908', market:'Denmark', lat:55.68, lon:12.57,
+    top:[['Fleur de Minuit',49],['Cendre Blanche',37],['Noir Absolu',24],['Ambre Vermeil',11]] },
+  { name:'Essenza Manila', region:'BGC, Taguig', tier:'Silver', sellThrough:39, stock:260,
+    rev:{mtd:217000,qtd:612000,ytd:1550000}, compliance:'2 pricing flags', status:'Review',
+    since:2024, renewal:'February 2027', doors:1, margin:.36, terms:'Net 30',
+    contact:'Paolo Cruz · Founder', email:'paolo@essenza.ph', phone:'9195614023', market:'Philippines', lat:14.55, lon:121.05,
+    top:[['Cendre Blanche',36],['Fleur de Minuit',28],['Ambre Vermeil',14],['Oud Royale',5]] }
+];
+
+const inventory = [
+  { sku:'AV-EDP-50', name:'Ambre Vermeil',  size:'50ml', node:'Manila DC',      onHand:1240, alloc:380, run:186 },
+  { sku:'AV-EDP-50', name:'Ambre Vermeil',  size:'50ml', node:'Dubai 3PL',      onHand:210,  alloc:88,  run:64 },
+  { sku:'NA-PAR-30', name:'Noir Absolu',    size:'30ml', node:'Manila DC',      onHand:640,  alloc:210, run:118 },
+  { sku:'NA-PAR-30', name:'Noir Absolu',    size:'30ml', node:'Singapore 3PL',  onHand:96,   alloc:44,  run:38 },
+  { sku:'FM-EDP-50', name:'Fleur de Minuit',size:'50ml', node:'Manila DC',      onHand:1520, alloc:410, run:142 },
+  { sku:'CB-EDT-100',name:'Cendre Blanche', size:'100ml',node:'Manila DC',      onHand:1880, alloc:240, run:79 },
+  { sku:'CB-EDT-100',name:'Cendre Blanche', size:'100ml',node:'Copenhagen 3PL', onHand:340,  alloc:60,  run:22 },
+  { sku:'OR-EXT-30', name:'Oud Royale',     size:'30ml', node:'Dubai 3PL',      onHand:118,  alloc:62,  run:41 },
+  { sku:'OR-EXT-30', name:'Oud Royale',     size:'30ml', node:'Manila DC',      onHand:260,  alloc:70,  run:34 },
+  { sku:'DS-SET-05', name:'Discovery set',  size:'5×2ml',node:'Manila DC',      onHand:3400, alloc:120, run:410 }
+];
+
+const cases = [
+  { id:'SRP-2609', partner:'Aroma District', kind:'Below price floor', sku:'Oud Royale · Extrait 30ml',
+    opened:'28 Aug 2026', severity:'high', status:'Open', floor:10500, seen:8650,
+    body:'Listed under the territory price floor on the partner web store for eleven days, including paid search on brand terms.',
+    foot:'Response due 8 Sep · escalation 2 of 3' },
+  { id:'CHN-2604', partner:'Essenza Manila', kind:'Unauthorised channel', sku:'Fleur de Minuit · EDP 50ml',
+    opened:'19 Aug 2026', severity:'high', status:'Open', floor:null, seen:null,
+    body:'Marketplace storefront selling sealed stock outside the approved channel list in the distribution agreement.',
+    foot:'Takedown requested 21 Aug · no reply' },
+  { id:'SRP-2612', partner:'Essenza Manila', kind:'Below price floor', sku:'Ambre Vermeil · EDP 50ml',
+    opened:'1 Sep 2026', severity:'med', status:'Open', floor:6400, seen:5350,
+    body:'Bundle pricing puts the effective unit price under the floor once the free discovery set is deducted.',
+    foot:'First notice sent 1 Sep' },
+  { id:'TER-2588', partner:'Nordlys Beauty', kind:'Territory breach', sku:'Noir Absolu · Parfum 30ml',
+    opened:'30 Jul 2026', severity:'med', status:'Resolved', floor:null, seen:null,
+    body:'Batch codes traced to a German reseller outside the contracted territory.',
+    foot:'Closed 22 Aug · stock recalled, written warning' },
+  { id:'AST-2571', partner:'The Parfumerie', kind:'Asset misuse', sku:'Spring campaign key visual',
+    opened:'12 Aug 2026', severity:'low', status:'Resolved', floor:null, seen:null,
+    body:'Expired campaign artwork still running in-store six weeks after the licence window closed.',
+    foot:'Closed 18 Aug · assets replaced' },
+  { id:'SRP-2544', partner:'Velvet & Vine', kind:'Below price floor', sku:'Cendre Blanche · EDT 100ml',
+    opened:'18 Jun 2026', severity:'low', status:'Resolved', floor:4900, seen:4080,
+    body:'Clearance pricing applied to current-season stock during a mall-wide sale.',
+    foot:'Closed 2 Jul · pricing corrected the same week' }
+];
+
+/* ═══════════════════════════════════════════════════════════
+   DEMO ACCOUNTS — front-end only. A real portal checks these
+   on a server against hashed passwords; see the notes below.
+   ═══════════════════════════════════════════════════════════ */
+/* Philippine mobile numbers: 10 digits starting 9, written +63 9XX XXX XXXX.
+   Accepts 09171234471, 639171234471, +63 917 812 4471 and so on. */
+function normalisePhone(raw){
+  let d = String(raw).replace(/\D/g, '');
+  if (d.startsWith('63')) d = d.slice(2);
+  if (d.startsWith('0')) d = d.slice(1);
+  return d;
+}
+const prettyPhone = d => '+63 ' + d.slice(0,3) + ' ' + d.slice(3,6) + ' ' + d.slice(6);
+
+/* ═══════════════════════════════════════════════════════════
+   Helpers
+   ═══════════════════════════════════════════════════════════ */
+const peso = v => '₱' + Math.round(v).toLocaleString('en-PH');
+const pesoCompact = v => v >= 1e6 ? '₱' + (v/1e6).toFixed(v >= 1e7 ? 0 : 1).replace(/\.0$/,'') + 'M'
+  : v >= 1000 ? '₱' + Math.round(v/1000) + 'k' : '₱' + v;
+const tok = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const sum = a => a.reduce((s,v) => s + v, 0);
+const cover = r => (r.onHand - r.alloc) / r.run;
+
+const statusPill = s => s === 'Active' ? 'p-ok' : s === 'Low stock' ? 'p-warn' : s === 'Review' ? 'p-crit' : 'p-gold';
+const coverBand = c => c < 3 ? 'crit' : c < 6 ? 'warn' : c > 16 ? 'over' : 'ok';
+const coverPill = c => ({ crit:'p-crit', warn:'p-warn', over:'p-gold', ok:'p-ok' })[coverBand(c)];
+const coverAction = c => ({ crit:'Air-freight now', warn:'Raise PO this week', over:'Slow replenishment', ok:'On plan' })[coverBand(c)];
+
+let period = 'mtd';   // session is declared with the access module below
+const P = () => periods[period];
+const partnerTotal = () => sum(resellers.map(r => r.rev[period]));
+const totalRev = p => sum(p.direct) + partnerTotal();
+/* The series gives the shape of partner revenue; the partner list gives
+   its size. Scale one onto the other so a new partner shows up in both. */
+const resellerSeries = p => {
+  const k = partnerTotal() / sum(p.reseller);
+  return p.reseller.map(v => v * k);
+};
+const me = () => resellers.find(r => r.name === session.partner);
+
+function sparkline(vals, color){
+  const w = 96, h = 26, pad = 2;
+  const min = Math.min(...vals), max = Math.max(...vals), span = (max - min) || 1;
+  const pts = vals.map((v,i) => [
+    pad + i * (w - pad*2) / Math.max(vals.length - 1, 1),
+    h - pad - (v - min) / span * (h - pad*2)
+  ]);
+  const line = pts.map(p => p[0].toFixed(1) + ',' + p[1].toFixed(1)).join(' ');
+  const last = pts[pts.length - 1];
+  return `<svg class="spark" viewBox="0 0 ${w} ${h}" aria-hidden="true">
+    <polygon points="${pad},${h} ${line} ${(w-pad).toFixed(1)},${h}" fill="${color}" fill-opacity="0.12"></polygon>
+    <polyline points="${line}" fill="none" stroke="${color}" stroke-width="1.4"
+      stroke-linejoin="round" stroke-linecap="round"></polyline>
+    <circle cx="${last[0].toFixed(1)}" cy="${last[1].toFixed(1)}" r="2" fill="${color}"></circle>
+  </svg>`;
+}
+
+let toastTimer;
+function toast(msg){
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('on');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('on'), 2400);
+}
+
+/* A partner's month-by-month sell-in, apportioned from the
+   channel series by their share of partner revenue for the year. */
+function myMonthly(p){
+  const r = me(), shareOf = r.rev.ytd / sum(resellers.map(x => x.rev.ytd));
+  // shape from the channel series, size from this partner's own figures
+  const raw = p.reseller.map(v => v * shareOf);
+  const scale = r.rev[period] / sum(raw);
+  return raw.map(v => v * scale);
+}
+
+/* ═══════════════════════════════════════════════════════════
+   Ledger
+   ═══════════════════════════════════════════════════════════ */
+function renderLedger(){
+  const p = P(), gold = tok('--gold'), acc = tok('--accent2'), crit = tok('--crit');
+  const el = document.getElementById('ledger');
+  document.getElementById('stamp').textContent =
+    (session.role === 'admin' ? 'All partners · ' : me().name + ' · ') + p.label + ' · ' + p.range +
+    ' · figures in Philippine pesos';
+
+  if (session.role === 'admin'){
+    const total = totalRev(p), resTotal = partnerTotal(), series = resellerSeries(p);
+    const revSpark = p.direct.map((d,i) => d + series[i]);
+    const shareSpark = p.direct.map((d,i) => Math.round(series[i] / (d + series[i]) * 100));
+    const openFlags = cases.filter(c => c.status === 'Open').length;
+    const underReview = new Set(cases.filter(c => c.status === 'Open').map(c => c.partner)).size;
+    el.innerHTML = `
+      <div class="tile lead">
+        <div class="k-label">Revenue · ${esc(p.short)}</div>
+        <div class="k-value num">${peso(total)}</div>
+        <div class="k-foot"><span class="k-note pos">+${p.delta}% ${esc(p.deltaVs)}</span>${sparkline(revSpark, gold)}</div>
+      </div>
+      <div class="tile">
+        <div class="k-label">Orders</div>
+        <div class="k-value num">${p.orders.toLocaleString('en-PH')}</div>
+        <div class="k-foot"><span class="k-note">Average basket ${peso(total / p.orders)}</span></div>
+      </div>
+      <div class="tile">
+        <div class="k-label">Partner share</div>
+        <div class="k-value num">${Math.round(resTotal / total * 100)}%</div>
+        <div class="k-foot"><span class="k-note">${peso(resTotal)} from ${resellers.length} partners</span>${sparkline(shareSpark, acc)}</div>
+      </div>
+      <div class="tile">
+        <div class="k-label">Avg. sell-through</div>
+        <div class="k-value num">${p.sellThrough}%</div>
+        <div class="k-foot"><span class="k-note neg">${p.target - p.sellThrough} pts under target</span></div>
+      </div>
+      <div class="tile alert">
+        <div class="k-label">Open pricing cases</div>
+        <div class="k-value num">${openFlags}</div>
+        <div class="k-foot"><span class="k-note">${underReview} partners under review</span>${sparkline([1,2,2,3,4,3,openFlags], crit)}</div>
+      </div>`;
+    document.getElementById('tabFlags').textContent = openFlags ? '· ' + openFlags : '';
+  } else {
+    const r = me(), gross = r.rev[period], income = gross * r.margin;
+    const monthly = myMonthly(p);
+    const myOpen = cases.filter(c => c.partner === r.name && c.status === 'Open').length;
+    const rank = resellers.slice().sort((a,b) => b.rev[period] - a.rev[period])
+      .findIndex(x => x.name === r.name) + 1;
+    el.innerHTML = `
+      <div class="tile lead">
+        <div class="k-label">My sell-in · ${esc(p.short)}</div>
+        <div class="k-value num">${peso(gross)}</div>
+        <div class="k-foot"><span class="k-note">${rank} of ${resellers.length} partners by volume</span>${sparkline(monthly, tok('--gold'))}</div>
+      </div>
+      <div class="tile">
+        <div class="k-label">My margin earned</div>
+        <div class="k-value num">${peso(income)}</div>
+        <div class="k-foot"><span class="k-note">${Math.round(r.margin*100)}% on ${esc(r.terms)} terms</span></div>
+      </div>
+      <div class="tile">
+        <div class="k-label">My sell-through</div>
+        <div class="k-value num">${r.sellThrough}%</div>
+        <div class="k-foot"><span class="k-note ${r.sellThrough >= P().target ? 'pos' : 'neg'}">${r.sellThrough >= P().target ? 'above' : (P().target - r.sellThrough) + ' pts under'} the ${P().target}% target</span></div>
+      </div>
+      <div class="tile">
+        <div class="k-label">My stock on hand</div>
+        <div class="k-value num">${r.stock.toLocaleString('en-PH')}</div>
+        <div class="k-foot"><span class="k-note">units across ${r.doors} ${r.doors === 1 ? 'door' : 'doors'}</span></div>
+      </div>
+      <div class="tile${myOpen ? ' alert' : ''}">
+        <div class="k-label">My open cases</div>
+        <div class="k-value num">${myOpen}</div>
+        <div class="k-foot"><span class="k-note">${myOpen ? 'action needed' : 'account in good standing'}</span></div>
+      </div>`;
+    document.getElementById('tabMyFlags').textContent = myOpen ? '· ' + myOpen : '';
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   Admin views
+   ═══════════════════════════════════════════════════════════ */
+function renderFragrances(){
+  const p = P(), total = sum(fragrances.map(f => f.rev[period]));
+  document.getElementById('fragNote').textContent = p.label + ' · sell-out across all channels';
+  document.getElementById('fragList').innerHTML = fragrances
+    .slice().sort((a,b) => b.rev[period] - a.rev[period])
+    .map(f => {
+      const g = f.growth[period], share = Math.round(f.rev[period] / total * 100);
+      return `<div class="frag">
+        <div><div class="frag-name">${esc(f.name)}</div>
+          <div class="frag-sub">${esc(f.conc)} · SRP ${peso(f.srp)}</div></div>
+        <div class="frag-fam">${esc(f.family)}</div>
+        <div class="num">${f.units[period].toLocaleString('en-PH')} units</div>
+        <div class="share"><span class="track"><span class="fill" style="width:${share}%"></span></span>${share}%</div>
+        <div class="frag-rev num">${peso(f.rev[period])}</div>
+        <div class="growth ${g < 0 ? 'down' : 'up'} num">${g < 0 ? '−' : '+'}${Math.abs(g)}%</div>
+      </div>`;
+    }).join('');
+}
+
+const filters = [
+  { key:'All',         test:() => true },
+  { key:'Active',      test:r => r.status === 'Active' },
+  { key:'Review',      test:r => r.status === 'Review' },
+  { key:'Low stock',   test:r => r.status === 'Low stock' },
+  { key:'Renewal due', test:r => r.status === 'Renewal due' },
+  { key:'Flagged',     test:r => r.compliance !== 'Clear' }
+];
+let currentFilter = 'All', searchTerm = '', sort = { key:'rev', dir:-1 };
+
+function visibleResellers(){
+  const f = filters.find(x => x.key === currentFilter), t = searchTerm.trim().toLowerCase();
+  return resellers.filter(f.test)
+    .filter(r => !t || r.name.toLowerCase().includes(t) || r.region.toLowerCase().includes(t))
+    .sort((a,b) => {
+      const k = sort.key;
+      const av = k === 'rev' ? a.rev[period] : a[k], bv = k === 'rev' ? b.rev[period] : b[k];
+      return typeof av === 'number' ? (av - bv) * sort.dir : String(av).localeCompare(String(bv)) * sort.dir;
+    });
+}
+
+function renderChips(){
+  document.getElementById('chips').innerHTML = filters.map(f =>
+    `<button class="chip${f.key === currentFilter ? ' on' : ''}" data-f="${esc(f.key)}">${esc(f.key)}<span class="n num">${resellers.filter(f.test).length}</span></button>`).join('');
+}
+
+function renderResellers(){
+  const rows = visibleResellers();
+  document.getElementById('resNote').textContent = P().label + ' · ' + rows.length + ' of ' + resellers.length + ' partners';
+  document.querySelectorAll('#resellerTable th.sortable').forEach(th => {
+    const on = th.dataset.key === sort.key;
+    th.innerHTML = th.textContent.replace(/[▲▼]\s*$/,'').trim() + (on ? `<span class="caret">${sort.dir === 1 ? '▲' : '▼'}</span>` : '');
+    th.setAttribute('aria-sort', on ? (sort.dir === 1 ? 'ascending' : 'descending') : 'none');
+  });
+  document.getElementById('resellerBody').innerHTML = rows.map(r => {
+    const band = r.sellThrough >= 70 ? '--ok' : r.sellThrough >= 50 ? '--warn' : '--crit';
+    return `<tr tabindex="0" data-name="${esc(r.name)}">
+      <td><div class="r-name">${esc(r.name)}</div><div class="r-sub">${esc(r.region)} · ${r.doors} ${r.doors === 1 ? 'door' : 'doors'}</div></td>
+      <td class="tier ${r.tier === 'Gold' ? 'tier-gold' : 'tier-silver'}">${esc(r.tier)}</td>
+      <td><div class="meter"><span class="track"><span class="fill" style="width:${r.sellThrough}%;background:var(${band})"></span></span><span class="num">${r.sellThrough}%</span></div></td>
+      <td class="num">${r.stock.toLocaleString('en-PH')} units</td>
+      <td class="r-num num">${peso(r.rev[period])}</td>
+      <td><div>${esc(r.renewal)}</div><div class="r-sub">partner since ${r.since}</div></td>
+      <td><span class="pill ${statusPill(r.status)}">${esc(r.status)}</span></td>
+    </tr>`;
+  }).join('');
+  document.getElementById('emptyState').hidden = rows.length > 0;
+  document.getElementById('emptyTerm').textContent = searchTerm.trim() ? '“' + searchTerm.trim() + '”' : 'this filter';
+}
+
+const invBands = ['All','Below cover','Reorder soon','Overstocked'];
+let invFilter = 'All';
+function invMatch(r, f){
+  const b = coverBand(cover(r));
+  return f === 'All' || (f === 'Below cover' && b === 'crit')
+    || (f === 'Reorder soon' && b === 'warn') || (f === 'Overstocked' && b === 'over');
+}
+function renderInventory(){
+  document.getElementById('invChips').innerHTML = invBands.map(b =>
+    `<button class="chip${b === invFilter ? ' on' : ''}" data-inv="${esc(b)}">${esc(b)}<span class="n num">${inventory.filter(r => invMatch(r,b)).length}</span></button>`).join('');
+  const rows = inventory.filter(r => invMatch(r, invFilter)).sort((a,b) => cover(a) - cover(b));
+  document.getElementById('invBody').innerHTML = rows.map(r => {
+    const c = cover(r);
+    return `<tr>
+      <td><div class="r-name">${esc(r.name)}</div><div class="r-sub num">${esc(r.sku)} · ${esc(r.size)}</div></td>
+      <td>${esc(r.node)}</td>
+      <td class="num">${r.onHand.toLocaleString('en-PH')}</td>
+      <td class="num">${r.alloc.toLocaleString('en-PH')}</td>
+      <td class="num">${r.run.toLocaleString('en-PH')} / wk</td>
+      <td class="r-num num">${c.toFixed(1)}</td>
+      <td><span class="pill ${coverPill(c)}">${esc(coverAction(c))}</span></td>
+    </tr>`;
+  }).join('');
+  document.getElementById('invEmpty').hidden = rows.length > 0;
+}
+
+function caseCard(c, showPartner){
+  return `<article class="case sev-${c.severity}${c.status === 'Resolved' ? ' done' : ''}">
+    <div class="case-top">
+      <div>
+        <div class="case-partner">${esc(showPartner ? c.partner : c.kind)}</div>
+        <div class="case-kind">${esc(showPartner ? c.kind : c.sku)}</div>
+      </div>
+      <span class="pill ${c.status === 'Open' ? (c.severity === 'high' ? 'p-crit' : 'p-warn') : 'p-ok'}">${esc(c.status)}</span>
+    </div>
+    <div class="case-body">${esc(c.body)}</div>
+    ${c.floor ? `<div class="price-line">
+      <div><span>Price floor</span><b class="num">${peso(c.floor)}</b></div>
+      <div><span>Observed</span><b class="num" style="color:var(--crit)">${peso(c.seen)}</b></div>
+      <div><span>Gap</span><b class="num">−${Math.round((1 - c.seen / c.floor) * 100)}%</b></div>
+    </div>` : ''}
+    <div class="case-foot"><span class="case-id">${esc(c.id)} · opened ${esc(c.opened)}</span><span>${esc(c.foot)}</span></div>
+  </article>`;
+}
+
+const compBands = ['Open','Resolved','All'];
+let compFilter = 'Open';
+function renderCompliance(){
+  document.getElementById('compChips').innerHTML = compBands.map(b =>
+    `<button class="chip${b === compFilter ? ' on' : ''}" data-comp="${esc(b)}">${esc(b)}<span class="n num">${b === 'All' ? cases.length : cases.filter(c => c.status === b).length}</span></button>`).join('');
+  const rows = cases.filter(c => compFilter === 'All' || c.status === compFilter);
+  document.getElementById('caseList').innerHTML = rows.map(c => caseCard(c, true)).join('');
+  document.getElementById('compEmpty').hidden = rows.length > 0;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   Partner views — scoped to the signed-in account only
+   ═══════════════════════════════════════════════════════════ */
+function renderMine(){
+  const r = me(), p = P();
+  document.getElementById('mineNote').textContent = p.label + ' · my sell-in from Vermonix, in pesos';
+  const unitsTotal = sum(r.top.map(t => t[1]));
+  document.getElementById('mineList').innerHTML = r.top.map(([name, units]) => {
+    const f = fragrances.find(x => x.name === name), share = Math.round(units / unitsTotal * 100);
+    return `<div class="frag">
+      <div><div class="frag-name">${esc(name)}</div>
+        <div class="frag-sub">${esc(f.conc)} · SRP ${peso(f.srp)}</div></div>
+      <div class="frag-fam">${esc(f.family)}</div>
+      <div class="num">${units} units</div>
+      <div class="share"><span class="track"><span class="fill" style="width:${share}%"></span></span>${share}% of my mix</div>
+      <div class="frag-rev num">${peso(units * f.srp)}</div>
+      <div class="growth up num">retail</div>
+    </div>`;
+  }).join('');
+
+  document.getElementById('mineFacts').innerHTML = `
+    <div class="fact"><span>Account</span><b>${esc(r.name)}</b></div>
+    <div class="fact"><span>Territory</span><b>${esc(r.region)}</b></div>
+    <div class="fact"><span>Tier</span><b class="${r.tier === 'Gold' ? 'tier-gold' : ''}">${esc(r.tier)}</b></div>
+    <div class="fact"><span>Status</span><b><span class="pill ${statusPill(r.status)}">${esc(r.status)}</span></b></div>
+    <div class="fact"><span>My margin</span><b class="num">${Math.round(r.margin*100)}%</b></div>
+    <div class="fact"><span>Payment terms</span><b>${esc(r.terms)}</b></div>
+    <div class="fact"><span>Doors</span><b class="num">${r.doors}</b></div>
+    <div class="fact"><span>Partner since</span><b class="num">${r.since}</b></div>
+    <div class="fact"><span>Contract renewal</span><b>${esc(r.renewal)}</b></div>
+    <div class="fact"><span>Account manager</span><b>Dominic Garcia</b></div>`;
+}
+
+function statementRows(){
+  const r = me(), p = P(), monthly = myMonthly(p);
+  return p.labels.map((label, i) => {
+    const gross = monthly[i], margin = gross * r.margin, coop = gross * .015;
+    return { label, gross, margin, coop, net: margin - coop,
+      paid: i < p.labels.length - 1 ? 'Settled' : 'Due ' + r.terms.toLowerCase() };
+  });
+}
+function renderStatement(){
+  const r = me(), rows = statementRows();
+  document.getElementById('stateNote').textContent =
+    P().label + ' · ' + r.terms + ' · all amounts in Philippine pesos';
+  document.getElementById('stateBody').innerHTML = rows.map(s => `<tr>
+    <td class="r-name">${esc(s.label)}</td>
+    <td class="num">${peso(s.gross)}</td>
+    <td class="num">${peso(s.margin)}</td>
+    <td class="num">−${peso(s.coop)}</td>
+    <td class="r-num num">${peso(s.net)}</td>
+    <td><span class="pill ${s.paid === 'Settled' ? 'p-ok' : 'p-warn'}">${esc(s.paid)}</span></td>
+  </tr>`).join('');
+  document.getElementById('stateFoot').innerHTML = `<tr>
+    <td>Total</td>
+    <td class="num">${peso(sum(rows.map(s => s.gross)))}</td>
+    <td class="num">${peso(sum(rows.map(s => s.margin)))}</td>
+    <td class="num">−${peso(sum(rows.map(s => s.coop)))}</td>
+    <td class="r-num num">${peso(sum(rows.map(s => s.net)))}</td>
+    <td></td></tr>`;
+}
+function renderMyCases(){
+  const rows = cases.filter(c => c.partner === session.partner);
+  document.getElementById('myCaseList').innerHTML = rows.map(c => caseCard(c, false)).join('');
+  document.getElementById('myCaseEmpty').hidden = rows.length > 0;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   Drawer (admin only)
+   ═══════════════════════════════════════════════════════════ */
+let lastFocus = null;
+function openDrawer(name){
+  if (viewingPartner) return;                 // partner view has no partner list
+  const r = resellers.find(x => x.name === name);
+  if (!r) return;
+  lastFocus = document.activeElement;
+  document.getElementById('drawerName').textContent = r.name;
+  document.getElementById('drawerSub').textContent = r.region + ' · ' + r.contact;
+  const flagged = cases.filter(c => c.partner === r.name);
+  document.getElementById('drawerBody').innerHTML = `
+    <div class="facts">
+      <div class="fact"><span>Tier</span><b class="${r.tier === 'Gold' ? 'tier-gold' : ''}">${esc(r.tier)}</b></div>
+      <div class="fact"><span>Status</span><b><span class="pill ${statusPill(r.status)}">${esc(r.status)}</span></b></div>
+      <div class="fact"><span>Sell-in ${esc(P().short)}</span><b class="num">${peso(r.rev[period])}</b></div>
+      <div class="fact"><span>Their margin</span><b class="num">${peso(r.rev[period] * r.margin)}</b></div>
+      <div class="fact"><span>Sell-through</span><b class="num">${r.sellThrough}%</b></div>
+      <div class="fact"><span>Stock on hand</span><b class="num">${r.stock.toLocaleString('en-PH')} units</b></div>
+      <div class="fact"><span>Trading terms</span><b>${esc(r.terms)} · ${Math.round(r.margin*100)}% margin</b></div>
+      <div class="fact"><span>Contract renewal</span><b>${esc(r.renewal)}</b></div>
+      <div class="fact"><span>Contact number</span><b class="num" style="font-size:13px">${esc(prettyPhone(r.phone))}</b></div>
+      <div class="fact"><span>Doors</span><b class="num">${r.doors}</b></div>
+    </div>
+    ${r.local && isAdmin ? `<div><button class="ghost" id="removePartner">Remove this partner</button>
+      <div class="stamp" style="margin-top:7px">Added on this browser · removing also removes their login.</div></div>` : ''}
+    <div><button class="ghost" id="openPartnerView">Open their dashboard</button></div>
+    <div>
+      <div class="sub-h">Top sell-out, ${esc(P().label.toLowerCase())}</div>
+      ${r.top.map(([n,u]) => `<div class="mini"><span class="m-name">${esc(n)}</span><span class="num">${u} units</span></div>`).join('')}
+    </div>
+    <div>
+      <div class="sub-h">Compliance history</div>
+      ${flagged.length ? flagged.map(c => `<div class="mini">
+          <span>${esc(c.kind)} · <span class="r-sub">${esc(c.opened)}</span></span>
+          <span class="pill ${c.status === 'Open' ? 'p-crit' : 'p-ok'}">${esc(c.status)}</span></div>`).join('')
+        : `<div class="mini"><span>No cases on file since ${r.since}</span><span class="pill p-ok">Clear</span></div>`}
+    </div>`;
+  const rm = document.getElementById('removePartner');
+  if (rm) rm.addEventListener('click', () => removePartner(r.name));
+  const open = document.getElementById('openPartnerView');
+  if (open) open.addEventListener('click', () => { closeDrawer(); setView(r.name); });
+  const d = document.getElementById('drawer');
+  d.hidden = false;
+  requestAnimationFrame(() => d.classList.add('on'));
+  document.getElementById('scrim').classList.add('on');
+  document.getElementById('drawerClose').focus();
+}
+function closeDrawer(){
+  const d = document.getElementById('drawer');
+  d.classList.remove('on');
+  document.getElementById('scrim').classList.remove('on');
+  setTimeout(() => { d.hidden = true; }, 220);
+  if (lastFocus) lastFocus.focus();
+}
+
+/* ═══════════════════════════════════════════════════════════
+   Charts
+   ═══════════════════════════════════════════════════════════ */
+const charts = {};
+const chartsReady = () => typeof Chart !== 'undefined';
+
+function gradient(ctx, hex, h){
+  const g = ctx.createLinearGradient(0, 0, 0, h);
+  g.addColorStop(0, hex + '4D'); g.addColorStop(1, hex + '05');
+  return g;
+}
+
+function buildCharts(){
+  if (!chartsReady()){
+    document.querySelectorAll('.chart-panel').forEach(el => {
+      el.classList.add('offline');
+      if (!el.querySelector('.chart-fallback')){
+        const note = document.createElement('div');
+        note.className = 'chart-fallback';
+        note.textContent = 'Charts need the Chart.js library, which could not be loaded — '
+          + 'check the connection, or open this page online. Every figure on the page is unaffected.';
+        el.appendChild(note);
+      }
+    });
+    return;
+  }
+  Chart.defaults.font.family = "'Jost', system-ui, sans-serif";
+  Chart.defaults.font.size = 11.5;
+  const gold = tok('--gold'), acc = tok('--accent2'), line = tok('--line'), text = tok('--text'),
+        muted = tok('--muted'), soft = tok('--panel-soft'), crit = tok('--crit'),
+        warn = tok('--warn'), ok = tok('--ok'), goldSoft = tok('--gold-soft');
+  Chart.defaults.color = muted;
+  const tip = { backgroundColor:soft, borderColor:line, borderWidth:1, titleColor:text, bodyColor:text,
+    padding:10, cornerRadius:2, displayColors:false, titleFont:{ weight:'400' } };
+  const money2 = { x:{ grid:{ display:false }, border:{ color:line } },
+    y:{ grid:{ color:line }, border:{ display:false }, ticks:{ callback:v => pesoCompact(v) } } };
+
+  Object.keys(charts).forEach(k => { charts[k].destroy(); delete charts[k]; });
+  const p = P();
+
+  if (session.role === 'admin'){
+    const rc = document.getElementById('revenueChart').getContext('2d');
+    charts.rev = new Chart(rc, {
+      type:'line',
+      data:{ labels:p.labels, datasets:[
+        { label:'Partners', data:resellerSeries(p), borderColor:acc, borderWidth:2, tension:.35,
+          backgroundColor:gradient(rc, acc, 280), fill:true, pointRadius:2.5, pointBackgroundColor:acc, pointHoverRadius:5 },
+        { label:'Direct', data:p.direct, borderColor:gold, borderWidth:2, tension:.35,
+          backgroundColor:gradient(rc, gold, 280), fill:true, pointRadius:2.5, pointBackgroundColor:gold, pointHoverRadius:5 }
+      ]},
+      options:{ responsive:true, maintainAspectRatio:false, interaction:{ mode:'index', intersect:false },
+        plugins:{ legend:{ display:false },
+          tooltip:{ ...tip, callbacks:{ label:c => c.dataset.label + ' · ' + peso(c.parsed.y) } } },
+        scales:money2 }
+    });
+
+    const sorted = resellers.slice().sort((a,b) => b.rev[period] - a.rev[period]);
+    charts.res = new Chart(document.getElementById('resellerChart'), {
+      type:'bar',
+      data:{ labels:sorted.map(r => r.name), datasets:[{ data:sorted.map(r => r.rev[period]),
+        backgroundColor:sorted.map(r => r.tier === 'Gold' ? gold : acc), maxBarThickness:40, borderRadius:1 }]},
+      options:{ responsive:true, maintainAspectRatio:false,
+        plugins:{ legend:{ display:false }, tooltip:{ ...tip, callbacks:{
+          title:i => sorted[i[0].dataIndex].name + ' · ' + sorted[i[0].dataIndex].region,
+          label:c => 'Sell-in ' + P().short + ' · ' + peso(c.parsed.y) } } },
+        scales:money2 }
+    });
+
+    const cov = inventory.slice().sort((a,b) => cover(a) - cover(b));
+    charts.cov = new Chart(document.getElementById('coverChart'), {
+      type:'bar',
+      data:{ labels:cov.map(r => r.sku + ' · ' + r.node.split(' ')[0]),
+        datasets:[{ data:cov.map(r => +cover(r).toFixed(1)),
+          backgroundColor:cov.map(r => ({ crit:crit, warn:warn, over:goldSoft, ok:ok })[coverBand(cover(r))]),
+          maxBarThickness:26, borderRadius:1 }]},
+      options:{ indexAxis:'y', responsive:true, maintainAspectRatio:false,
+        plugins:{ legend:{ display:false }, tooltip:{ ...tip, callbacks:{
+          title:i => cov[i[0].dataIndex].name + ' · ' + cov[i[0].dataIndex].node,
+          label:c => c.parsed.x + ' weeks of cover · ' + coverAction(c.parsed.x) } } },
+        scales:{ x:{ grid:{ color:line }, border:{ display:false }, ticks:{ callback:v => v + 'w' } },
+          y:{ grid:{ display:false }, border:{ color:line }, ticks:{ font:{ size:10.5 } } } } }
+    });
+  } else {
+    const r = me(), monthly = myMonthly(p);
+    const mc = document.getElementById('mineChart').getContext('2d');
+    charts.mine = new Chart(mc, {
+      type:'bar',
+      data:{ labels:p.labels, datasets:[
+        { type:'line', label:'My margin', data:monthly.map(v => v * r.margin), borderColor:acc,
+          borderWidth:2, tension:.35, pointRadius:2.5, pointBackgroundColor:acc, fill:false },
+        { label:'My sell-in', data:monthly, backgroundColor:gold, maxBarThickness:46, borderRadius:1 }
+      ]},
+      options:{ responsive:true, maintainAspectRatio:false, interaction:{ mode:'index', intersect:false },
+        plugins:{ legend:{ display:false }, tooltip:{ ...tip, callbacks:{
+          label:c => c.dataset.label + ' · ' + peso(c.parsed.y) } } },
+        scales:money2 }
+    });
+  }
+}
+
+
+const MAP_LAND = "m127.733 -0.848l0.148 0.016l0.086 -0.211l0.194 -0.115l0.061 -0.243l0.466 -0.172l0.015 0.467l-0.404 0.229l-0.038 0.143l0.35 0.184l0.081 0.19l0.208 0.144l-0.917 -0.256l-0.096 0.174l0.091 0.546l0.447 0.645l-0.379 -0.187l-0.354 -0.464l0.017 -0.53l-0.172 -0.323l0.071 -0.237l-0.179 -0.292l0.203 -0.704l0.404 -0.355l-0.149 0.366l0.124 0.132l0.001 0.369l-0.359 0.318l-0.019 0.078zm-10.422 -7.592l-0.092 0.073l0.037 -0.174l0.094 -0.173l0.535 -0.527l0.139 -0.029l0.091 -0.077l0.418 -0.447l0.195 -0.241l0.117 -0.096l0.179 -0.223l0.119 -0.055l0.081 -0.068l0.063 -0.097l0.026 -0.113l-0.052 -0.158l0.045 -0.129l0.195 -0.372l0.052 0.032l-0.02 0.212l0.029 0.056l-0.035 0.093l0.157 0.401l0.003 0.052l-0.092 0.093l-0.226 0.08l-0.084 0.075l-0.093 0.191l-0.243 0.068l-0.167 0.077l-0.027 0.054l0.019 0.095l-0.204 0.344l-0.135 0.167l-0.085 0.055l-0.121 0.033l-0.095 0.067l-0.144 0.224l-0.21 0.148l-0.208 0.087l-0.055 0.104zm5.185 -3.175l0.117 0.051l0.113 -0.044l0.112 0.012l0.093 0.067l-0.036 0.088l0.208 -0.1l0.055 0.005l-0.014 0.172l-0.024 0.077l-0.103 0.17l-0.214 0.127l-0.033 0.166l-0.097 0.023l-0.151 0.109l-0.324 0.069l-0.089 0.047l-0.155 0.132l-0.02 -0.05l0.046 -0.145l-0.03 -0.118l0.014 -0.115l0.057 -0.107l0.03 -0.118l0.009 -0.229l0.044 -0.317l-0.003 -0.038l-0.034 -0.043l-0.126 -0.034l-0.05 -0.033l0.025 -0.063l0.048 -0.043l0.065 0.002l0.262 0.123zm0.635 2.551l-0.136 0.005l-0.047 -0.049l-0.081 -0.212l-0.202 -0.09l-0.103 -0.073l-0.151 -0.211l-0.011 -0.129l0.071 -0.139l0.242 -0.028l0.143 -0.097l0.011 -0.197l-0.05 -0.22l0.089 -0.099l0.052 -0.095l0.025 -0.189l0.274 -0.107l0.254 0.071l0.057 0.142l-0.075 0.199l-0.086 0.123l-0.063 0.134l-0.048 0.2l-0.134 0.261l-0.012 0.258l0.158 0.249l0.013 0.084l-0.092 0.152zm1.444 -2.279l0.069 0.035l0.08 -0.014l0.097 -0.079l0.109 0.028l0.097 0.161l0.017 0.077l-0.004 0.183l-0.027 0.166l0.151 0.149l0.024 0.052l0.009 0.128l0.071 0.149l-0.015 0.044l-0.105 -0.008l-0.005 0.083l-0.038 -0.029l-0.061 -0.105l-0.056 -0.045l0.039 0.335l-0.098 -0.063l-0.116 -0.039l-0.032 -0.033l0.009 -0.16l-0.052 -0.112l0.061 -0.242l-0.012 -0.099l-0.048 -0.099l-0.076 -0.082l-0.047 -0l-0.113 0.058l-0.057 -0.02l-0.08 -0.447l-0.058 -0.115l0.023 -0.049l0.217 0.14zm0.665 -1.185l0.07 0.082l0.018 0.059l-0.008 0.065l0.032 0.029l0.129 0.041l0.055 0.061l-0.033 0.055l0.01 0.081l-0.056 0.102l0.007 0.181l0.033 0.058l-0.005 0.12l0.117 0.271l-0.035 0.085l0.053 0.004l0.077 0.069l0.045 0.091l-0.013 0.024l-0.062 -0.071l-0.046 -0.011l-0.196 0.019l-0.199 -0.032l-0.077 -0.122l-0.068 -0.02l-0.054 -0.054l-0.089 -0.138l-0.028 -0.079l0.062 -0.08l0.016 -0.127l-0.059 0.01l-0.052 -0.02l-0.207 -0.246l-0.148 -0.058l-0.083 -0.074l-0.061 -0.091l-0.059 -0.16l-0.031 -0.165l0.271 0.043l0.274 -0.009l0.31 -0.038zm-4.536 -0.951l0.051 0.008l0.16 -0.03l0.066 0.015l0.044 0.057l0.097 0.048l0.081 -0.051l0.081 0.058l0.073 0.109l0.166 0.134l0.016 0.042l-0.049 0.069l-0.015 0.088l0.005 0.095l0.061 0.199l-0.129 0.215l-0.018 0.122l-0.072 -0.003l-0.085 0.085l-0.12 -0.034l-0.034 -0.086l-0.12 -0.108l-0.041 -0.065l-0.023 -0.134l-0.103 -0.102l-0.027 -0.093l-0.005 -0.129l-0.113 -0.199l-0.143 -0.091l-0.053 -0.134l-0.117 -0.018l0.015 -0.061l0.048 -0.044l0.067 -0.005zm5.302 4.158l0.082 0.06l0.105 -0.016l-0.001 0.152l0.113 0.173l0.015 0.107l-0.057 0.101l-0.121 0.117l-0.002 0.031l0.033 0.036l0.109 0.021l0.083 0.055l0.015 0.157l0.079 0.124l-0.034 0.276l0.01 0.094l0.135 0.156l0.023 0.13l-0.011 0.299l-0.143 0.236l-0.145 0.13l-0.077 -0.009l-0.025 0.038l0.048 0.119l-0.051 0.424l-0.079 -0.18l-0.03 -0.243l-0.037 -0.11l-0.058 -0.101l-0.023 -0.089l-0.061 -0.084l-0.077 -0.216l-0.05 0.011l-0.085 0.059l-0.048 0.158l-0.099 0.088l-0.141 0.221l-0.02 0.106l0.052 0.083l0.155 0.141l0.083 0.241l-0.003 0.246l-0.212 0.315l-0.11 0.065l-0.058 -0.033l-0.047 -0.125l-0.008 -0.051l0.032 -0.118l0.003 -0.107l-0.036 -0.037l-0.058 0.023l-0.139 0.176l-0.108 -0.004l-0.291 -0.123l-0.423 -0.235l-0.135 -0.171l-0.028 -0.129l-0.002 -0.134l-0.06 -0.196l-0.003 -0.131l0.06 -0.12l0.146 -0.153l0.022 -0.065l-0.006 -0.064l-0.139 -0.182l-0.1 -0.087l-0.203 -0.078l-0.099 -0.075l-0.113 -0.014l-0.06 0.024l-0.017 0.143l-0.085 0.257l-0.213 -0.121l-0.081 -0.171l-0.107 0.154l-0.147 0.017l-0.024 -0.029l-0.027 -0.164l-0.078 -0.052l-0.098 0.011l-0.142 0.124l-0.332 0.689l-0.044 0.036l-0.07 -0.015l-0.064 -0.039l-0.06 -0.107l0.021 -0.125l0.122 -0.164l0.085 -0.446l0.111 -0.135l0.094 -0.083l0.05 -0.018l0.202 -0.047l0.084 -0.04l0.131 -0.001l0.107 -0.022l0.085 -0.065l0.003 -0.135l0.052 -0.078l0.096 -0.082l0.146 -0.025l0.048 -0.029l0.094 -0.133l0.245 0.082l0.103 0.073l0.066 0.115l0.028 0.244l-0.024 0.044l-0.1 0.087l0.046 0.009l0.198 -0.11l0.162 -0.042l0.039 -0.029l0.085 -0.156l0.042 -0.122l0.08 -0.092l0.046 -0.006l0.171 0.083l0.109 -0.04l0.056 -0.311l0.019 -0.05l0.063 -0.048l0.075 0.015l0.102 0.066l0.095 0.022l0.069 -0.158l0.166 0.035l0.123 -0.023l0.034 -0.126l-0.119 -0.528l0.057 -0.088l0.05 -0.002l0.121 0.105l0.235 0.141l0.078 0.086zm-4.904 -9.294l0.152 0.052l0.339 0.187l0.253 0.081l0.102 0.01l0.09 -0.043l0.109 -0.159l0.074 -0.014l0.045 0.042l0.034 0.056l0.015 0.083l-0.021 0.086l-0.071 0.077l-0.044 0.093l-0.027 0.4l0.085 0.229l0.032 0.04l0.093 0.05l0.026 0.038l0.02 0.129l0.111 0.053l-0.093 0.302l-0.2 0.388l-0.012 0.083l-0.079 0.167l-0.16 0.027l-0.186 0.081l-0.194 0.144l-0.034 0.106l0.048 0.101l-0.002 0.056l-0.117 0.16l-0.098 0.186l0.007 0.057l0.296 0.53l-0.068 0.055l0.001 0.101l0.021 0.1l0.118 0.313l0.033 0.054l0.112 0.094l0.168 0.073l0.132 0.017l0.016 -0.049l0.059 -0.017l-0.013 -0.049l-0.071 -0.067l-0.003 -0.036l0.291 -0.174l0.136 0.004l0.229 0.067l0.078 0.063l0.081 0.108l0.056 0.12l-0.011 0.171l0.042 0.039l0.129 0.003l0.066 -0.089l0.008 -0.101l-0.046 -0.038l0.061 -0.087l0.112 0.096l0.294 0.082l0.09 0.047l0.042 0.037l-0.052 0.078l-0.199 0.018l-0.057 0.058l0.058 0.118l0.096 0.096l0.115 0.163l-0.002 0.077l-0.032 0.081l0.088 -0.006l0.082 0.017l0.114 0.068l0.074 -0.004l-0.006 0.245l-0.077 0.224l-0.098 -0.028l-0.084 -0.095l0.017 -0.115l0.054 -0.111l-0.031 -0.024l-0.182 0.043l-0.109 -0.015l-0.225 -0.121l-0.091 -0.011l-0.021 -0.055l0.006 -0.117l-0.133 -0.226l-0.3 -0.175l-0.082 -0.12l-0.186 -0.171l-0.109 -0.022l-0.018 0.043l0.036 0.124l0.004 0.106l0.088 0.095l0.072 0.167l0.007 0.142l-0.075 0.059l-0.085 -0.066l-0.017 -0.104l-0.121 -0.157l-0.172 -0.127l-0.132 -0.14l-0.295 -0.15l-0.086 0.003l-0.191 0.093l-0.05 0.051l-0.005 0.079l-0.102 0.063l-0.14 0.009l-0.108 -0.039l-0.09 -0.079l-0.074 -0.004l-0.091 -0.123l-0.112 -0.016l-0.092 0.097l-0.02 -0.384l0.071 -0.103l0.234 -0.202l0.03 -0.065l-0.011 -0.087l-0.053 -0.071l-0.084 -0.043l-0.096 -0.018l-0.07 -0.039l-0.054 -0.065l-0.037 0.115l0.042 0.283l-0.033 0.042l-0.117 -0.012l-0.043 -0.04l-0.031 -0.115l-0.081 -0.076l-0.033 -0.109l-0.037 -0.016l-0.076 0.009l-0.056 -0.051l-0.037 -0.127l-0.008 -0.137l-0.104 -0.316l-0.041 -0.407l-0.032 -0.068l-0.091 -0.102l0.004 -0.247l0.017 -0.048l0.041 -0.024l0.099 0.088l0.103 0.054l0.091 0.119l0.036 0.018l0.177 -0.018l0.032 -0.044l0.02 -0.112l-0.064 -0.178l-0.021 -0.245l0.017 -0.117l0.088 -0.194l0.018 -0.421l-0.002 -0.061l-0.053 -0.097l-0.014 -0.103l0.147 -0.525l0.079 -0.206l0.016 -0.139l0.214 -0.095l0.111 0.018zm3.787 17.62l-0.461 0.524l-0.674 0.165l-0.489 -0.021l-0.268 -0.167l-1.984 0.052l-0.434 -0.086l-0.23 0.079l-0.157 0.18l-0.179 0.465l0.05 0.36l0.178 0.312l0.277 0.171l0.149 0.331l0.367 0.037l0.115 -0.068l0.427 -0.51l0.162 0.097l0.232 0.007l0.31 -0.176l0.609 -0.002l-0.06 -0.096l0.342 -0.088l0.209 0.078l0.054 0.129l-0.056 0.226l-0.152 -0.002l-0.177 -0.13l-0.146 0.029l-0.652 0.654l-0.392 0.138l-0.208 0.202l-0.296 -0.017l0.22 0.273l0.195 0.09l0.313 0.509l0.209 0.158l0.107 0.293l-0.082 0.074l-0.064 0.345l0.326 0.262l0.111 0.202l0.158 -0.019l0.024 0.327l-0.152 -0.051l0.002 0.07l-0.608 0.129l-0.076 0.292l-0.449 -0.072l-0.102 -0.179l0.131 -0.488l-0.305 -0.174l-0.421 -0.398l0.162 -0.354l-0.002 -0.415l-0.173 -0.106l-0.225 0.022l-0.393 0.281l0.176 0.758l-0.075 0.379l0.058 0.531l-0.141 0.529l0.151 0.445l-0.478 -0.013l-0.235 0.115l-0.16 -0.082l-0.197 -0.297l0.234 -0.791l0.03 -0.489l-0.144 -0.304l-0.013 -0.217l-0.105 -0.054l-0.367 0.079l-0.127 -0.14l-0.085 -0.677l0.309 -0.238l0.08 -0.343l0.15 -0.21l-0.013 -0.522l0.199 -0.501l0.203 -0.226l0.133 0.181l-0.122 -0.774l0.144 -0.128l-0.057 -0.199l0.104 -0.206l0.357 -0.526l0.146 0.122l0.187 -0.005l0.265 -0.399l0.214 -0.075l0.322 0.084l0.188 0.176l0.845 0.05l0.401 0.172l0.229 -0.096l0.864 0.092l0.603 -0.38l0.066 -0.162l0.188 -0.076l0.159 -0.204l0.164 -0.014l0.123 0.184zm-8.081 -5.696l-0.02 0.085l0.125 -0.054l0.216 -0.309l0.101 0.029l0.064 0.263l0.316 0.164l0.084 0.163l-0.078 0.153l0.029 0.195l-0.144 0.117l0.503 -0.168l0.112 0.191l-0.181 0.075l0.039 0.081l0.379 -0.1l0.242 0.214l0.661 0.226l-0.006 0.167l-0.118 0.099l-0.46 0.136l-0.411 -0.025l-0.076 0.16l0.377 0.327l-0.014 0.123l-0.54 0.129l-0.312 -0.093l-0.199 0.21l-0.032 0.057l0.312 0.387l-0.147 0.053l-0.12 -0.094l-0.06 0.101l-0.394 0.006l0.29 0.196l0.006 0.233l0.259 0.13l0.027 0.113l-0.069 0.022l0.129 0.042l-0.059 0.062l0.147 0.078l0.281 0.429l-0.025 0.103l-0.253 0.188l0.291 0.325l0.905 0.72l-0.093 0.095l-0.357 0.073l-0.339 -0.06l-0.284 -0.225l0.052 0.209l-0.219 0.16l-0.223 0.494l-0.059 0.56l0.1 0.447l-0.322 0.155l-0.327 0.298l-0.117 -0.04l-0.057 -0.14l0.013 0.283l-0.478 0.458l0.149 -0l-0 0.268l-0.11 0.087l0.214 0.068l0.021 0.203l-0.02 0.1l-0.212 0.041l-0.01 0.051l0.068 -0.025l-0.044 0.324l-0.177 0.082l0.103 0.142l-0.301 0.469l-1.262 0.575l-0.069 -0.058l-0.099 -0.735l-0.08 0.105l-0.102 -0.038l0 -0.209l-0.108 0.126l-0.154 -0.082l-0.123 0.115l-0.254 0.061l-0.071 -0.035l-0.024 -0.224l-0.267 0.05l-0.309 -0.313l-0.063 0.254l-0.213 0.135l-0.158 0.078l-0.315 -0.079l-0.427 0.231l-0.035 -0.495l-0.128 -0.168l-0.07 0.086l-0.257 -0.041l-0.438 0.137l-0.1 -0.076l0.069 -0.086l-0.196 0.112l-0.129 -0.13l-0.318 0.075l-0.159 -0.965l-0.137 -0.138l0.076 -0.337l-0.053 -0.251l-0.301 -0.331l-0.393 -0.098l-0.018 -0.114l0.102 -0.094l-0.243 -0.193l-0.008 -0.18l0.136 -0.296l-0.313 -0.325l-0.039 -0.438l0.053 -0.341l0.173 -0.119l-0.122 0.014l0.066 -0.256l0.303 -0.427l0.25 -0.105l0.236 0.264l0.484 0.044l0.874 0.324l-0.194 -0.162l0.239 -0.582l-0.059 -0.24l0.033 -0.056l0.202 0.054l0.069 -0.361l1.475 -0.419l0.936 -1.081l0.088 -0.332l0.412 -0.085l0.571 -0.362l0.032 0.122l0.401 -0.069l0.154 -0.225l-0.115 -0.06l-0.048 -0.159l0.185 -0.19l0.137 0.07l0.136 -0.081l0.261 -0.516l0.357 -0.392l0.281 -0.468l0.074 0.163zm4.201 -15.929l-0.112 0.241l-0.057 0.454l-0.097 -0.031l-0.162 -0.4l-0.265 -0.192l-0.233 -0.546l0.049 -0.559l0.909 -1.38l0.553 -0.242l0.335 0.301l-0.109 0.149l0.008 0.291l-0.215 0.481l-0.216 0.88zm-6.777 0.409l-0.025 0.016l-0.073 -0.097l0.053 -0.005l0.06 0.033zm6.927 16.135l0.055 0.072l0.069 -0.018l0.109 0.02l0.019 0.062l-0.117 0.07l-0.076 -0.073l-0.135 0.05l-0.064 -0.03l-0.088 0.027l-0.055 -0.057l0.022 -0.054l0.14 -0.089zm-3.804 -2.139l-0.068 0.024l-0.006 -0.124l0.073 0.026zm-0.275 0.332l-0.052 0.075l-0.058 -0.087l0.006 -0.122l0.018 -0.034l0.083 -0.018zm2.836 -2.603l-0.123 0.031l-0.029 -0.097l0.088 -0.088l0.156 0.07zm-0.055 -1.039l0.022 0.053l-0.028 0.079l-0.024 0.017l-0.032 -0.033l-0.069 -0.023l-0.004 -0.043l0.035 0.001zm0.239 -0.643l0.055 0.016l0.039 -0.015l0.034 -0.053l0.033 0.078l0.08 0.065l-0.026 0.065l-0.141 -0.008l-0.074 0.026l-0.089 -0.014l-0.145 -0.191l0.02 -0.101l0.03 -0.019zm-0.061 0.465l-0.075 0.034l-0.019 -0.022l-0.012 -0.083l-0.072 -0.18l0.055 -0.027l0.12 0.064l0.035 0.056l0.002 0.078zm2.611 1.23l-0.112 0.048l-0.021 -0.068l0.02 -0.115l0.111 -0.115l0.053 -0.018l0.028 0.035l0.008 0.051l-0.056 0.157zm0.72 1.023l-0.038 0.027l-0.016 -0.066l0.088 -0.4l-0.018 -0.078l0.128 -0.173l0.079 -0.163l0.118 -0.171l0.015 -0.088l0.106 -0.169l0.098 -0.233l-0.005 -0.077l0.025 -0.038l0.017 -0.108l0.072 -0.087l0.019 0.057l-0.021 0.11l0.016 0.181l-0.025 0.158l0.023 0.182l-0.046 0.186l-0.053 0.083l-0.163 0.096l-0.089 0.093l-0.057 0.108l-0.009 0.098l-0.14 0.333zm0.387 -1.833l0.059 0.132l-0.079 -0l-0.029 -0.097zm0.837 1.496l-0.01 0.037l-0.106 0.002l-0.075 0.094l-0.043 0.024l-0.238 0.031l-0.186 -0.025l-0.064 -0.052l-0.055 -0.141l0.092 -0.103l0.151 -0.08l0.034 -0.061l0.079 -0.074l0.163 -0.025l0.241 0.133l-0.022 0.148zm0.213 0.644l-0.029 0.06l-0.112 -0.049l-0.027 -0.043l0.014 -0.051l0.084 -0.017l0.053 0.053zm-1.109 -0.094l0.008 0.103l-0.092 0.031l-0.073 -0.027l-0.048 -0.062l0.001 -0.024l0.041 0.002l0.12 -0.065zm-3.448 3.98l-0.058 0.089l-0.074 -0.047l-0.017 0.046l-0.088 0.018l-0.055 0.071l-0.08 0.02l-0.057 -0.01l0.006 -0.063l0.156 -0.095l0.097 -0.036l0.085 -0.068l0.043 -0.008zm1.843 -1.171l-0.134 0.012l-0.079 -0.102l-0.008 -0.045l-0.063 -0.051l0.023 -0.05l0.083 -0.012l0.143 -0.065l0.23 0.102l0.036 0.037l-0.072 0.022l-0.051 0.097zm3.966 -3.338l-0.012 0.005l-0.056 -0.078l0.008 -0.088l0.075 -0.132l0.055 0.115l-0.008 0.079l0.052 0.065l-0.036 0.032zm-0.369 -0.148l-0.017 0.028l-0.024 -0.058l-0.154 -0.175l0.027 -0.073l0.003 -0.118l0.142 -0.13l0.018 0.048l-0.038 0.147l0.056 0.173zm-5.419 -3.837l0.002 0.068l-0.169 -0.099l-0.001 -0.061l0.018 -0.015l0.09 0.037zm1.644 0.211l0.081 -0.007l0.119 0.084l0.007 0.098l-0.117 0.16l-0.176 -0.124l-0.014 -0.095l0.051 -0.142zm0.179 1.185l-0.08 0.249l-0.054 -0.085l0.022 -0.054l-0.046 -0.045l-0.013 -0.041l0.018 -0.054l0.048 -0.05l0.013 -0.164l0.102 -0.052l0.041 -0.002zm0.56 0.046l-0.051 0.023l-0.18 -0.169l0.049 -0.037l0.132 0l0.07 0.068l0.009 0.042zm0.628 -0.544l0.085 0.152l-0.093 -0.104l-0.108 -0.071l-0.112 -0.117l-0.105 -0.066l0.009 -0.048l0.086 -0.006l0.162 0.208zm0.493 0.399l0.004 0.088l-0.192 -0.267l0.034 -0.042l0.088 0.064zm-0.058 0.167l0.191 0.118l0.132 0.202l0.006 0.215l-0.198 -0.162l-0.123 -0.038l0.011 -0.051l-0.068 -0.066l-0.056 -0.021l-0.081 -0.107l-0.057 -0.02l-0.055 0.023l-0.126 0.158l-0.135 0.11l0.109 -0.469l-0.031 -0.188l0.227 0.082l0.096 0.056l0.016 0.038zm0.637 -1.345l-0.027 0.065l-0.032 -0.023l-0.047 0.003l-0.073 0.055l-0.118 -0.074l-0.018 -0.057l0.085 -0.127l-0.001 -0.19l0.063 -0.08l0.039 -0.018l0.083 0.131l0.109 0.076l-0.021 0.121l0.008 0.071zm-2.179 -0.417l-0.003 0.041l-0.216 -0.148l-0.01 -0.049l0.013 -0.024zm-0.142 -0.956l0.019 0.035l-0.035 0.005l-0.047 0.072l0.052 0.134l-0.032 0.097l-0.057 0.006l-0.022 -0.011l0.024 -0.07l-0.012 -0.063l-0.103 -0.164l0.02 -0.074l0.132 -0.008zm-0.111 -3.89l-0.064 0.072l-0.033 -0.02l0.064 -0.149l0.054 -0.018l0.045 0.053zm-0.67 -0.187l-0.005 0.067l-0.051 -0.036l-0.011 -0.05l0.028 -0.083l0.032 0.041zm0.269 -0.28l0.01 0.091l-0.059 -0.002l-0.089 -0.055l-0.008 -0.028l0.017 -0.043zm0.439 -1.004l-0.046 0.007l0.027 -0.095l0.05 -0.026l0.04 0.011zm-0.082 -0.416l-0.048 0.082l-0.039 -0.001l0.057 -0.14l0.019 0.002zm6.576 18.73l-0.158 0.017l-0.036 -0.048l-0.042 -0.214l0.112 -0.172l0.142 -0.102l0.13 -0.027l0.086 0.124l-0.065 0.25l-0.075 0.127zm-1.637 -1.981l-0.041 0.02l-0.065 -0.007l-0.007 -0.051l0.11 -0.187l-0.047 -0.025l-0.045 -0.061l-0.001 -0.072l0.036 -0.132l0.055 0.011l0.053 0.057l0.056 0.189l-0.073 0.111zm-0.098 0.158l0.003 0.042l-0.061 -0.095l-0.023 -0.114l0.102 0.124zm0.133 0.107l-0.016 0.011l-0.036 -0.027l-0.021 -0.059l0.025 -0.015l0.053 0.046zm-1.194 0.332l-0.025 0.031l-0.121 -0.056l0.006 -0.089l-0.063 -0.134l0.014 -0.049l0.074 0.063zm-0.251 0.784l-0.01 0.022l-0.037 -0.117l0.031 -0.058l0.055 0.042l-0.042 0.056zm-7.484 -1.402l-0.186 0.05l-0.112 -0.117l0.042 -0.083l-0.005 -0.046l0.099 -0.002l0.124 0.066zm-0.265 0.773l-0.012 0.033l-0.086 -0.08l-0.023 -0.058l0.011 -0.046l0.089 -0.004l0.044 0.028zm-0.516 -3.887l-0.061 0.053l-0.021 -0.064l0.004 -0.082l0.083 -0.076l0.117 -0.015l0.017 0.061l-0.014 0.07l-0.028 0.036zm7.174 -3.438l-0.028 0.005l0.047 -0.106l0.047 0.027l-0.001 0.047zm0.965 0.624l0.007 0.049l-0.129 -0.13l-0.026 -0.092l0.043 0.004l0.055 0.035zm-2.344 2.573l0.007 0.048l-0.104 0.046l-0.035 -0.001l-0.008 -0.077l0.025 -0.035l0.049 0.031l0.044 -0.036zm2.848 0.446l-0.016 0.057l-0.086 -0.167l0.031 -0.113l0.069 0.055zm0.186 -2.631l-0.019 0.026l-0.03 -0.053l0.046 -0.138l0.025 0.074zm-1.363 -1.898l-0.125 0.006l-0.054 -0.046l-0.069 -0.134l0.077 -0.029l0.074 0.008l0.054 0.047l0.057 0.09zm0.246 -0.103l-0.018 0.052l-0.055 -0.038l-0.05 -0.134l0.057 0.032zm-11.299 -11.209l0.009 0.046l-0.138 -0.101l-0.022 -0.044l0.061 -0.002zm-0.765 1.202l-0.019 0.02l-0.058 -0.116l0.069 -0.074l0.081 0.019l-0.062 0.058zm-0.146 -0.038l-0.119 0.017l0.034 -0.052l0.089 -0.035zm1.354 -0.57l-0.121 -0l-0.038 -0.032l0.043 -0.038l0.162 -0.053l-0.041 0.055zm-96.018 -37.119l0.529 -0.079l0.109 0.081l-0.204 0.037l-0.129 0.181l-1.307 0.455l-0.764 0.017l0.574 0.052l0.136 0.092l-0.272 0.059l0.118 0.22l-0.07 0.053l-0.005 0.243l-0.098 0.005l-0.042 0.101l0.097 0.311l-0.176 0.236l0.052 0.197l-0.531 0.845l-0.17 0.098l-0.2 -0.061l-0.913 0.052l0.041 0.101l-0.196 -0.016l-0.344 0.216l-0.012 0.104l0.139 0.201l-0.168 0.131l-0.368 -0.032l-0.485 0.083l-0.435 -0.065l0.088 -0.337l-0.503 -0.543l0.331 0.027l-0.146 -0.177l0.201 -0.011l0.063 -0.064l-0.036 -0.102l-0.463 -0.288l-0.368 -0.541l-0.091 0.021l-0.083 -0.253l-0.144 -0.039l-0.032 -0.255l-0.154 -0.028l-0.1 -0.117l-0.017 -0.222l-0.184 -0.029l-0.101 -0.62l0.049 -0.089l0.19 0.012l-0.552 -0.118l-0.189 -0.205l-0.05 -0.376l-0.061 0.069l0.036 0.109l-0.172 0.068l0.033 0.239l-0.252 0.271l-0.336 0.051l-0.286 -0.155l0.139 0.103l-0.039 0.039l-0.347 0.114l0.086 0.051l-1.23 0.661l-0.7 0.124l-0.461 -0.003l-0.128 -0.127l-0.146 0.083l-0.176 -0.055l0.105 -0.14l-0.605 -0.112l-0.469 -0.245l-0.064 -0.203l0.09 -0.19l0.487 0.143l0.264 -0.131l-0.264 0.049l-0.21 -0.146l0.063 -0.201l0.463 -0.248l-1.053 0.381l-0.189 0.003l-0.041 -0.063l0.11 -0.338l0.23 -0.149l0.3 0.052l0.445 -0.157l-0.383 0.023l-0.104 -0.068l0.619 -0.49l0.225 -0.008l-0.047 0.208l0.193 -0.265l0.276 -0.094l-0.843 0.166l-0.276 0.276l-0.731 0.431l-0.041 -0.093l0.101 -0.356l0.483 -0.035l-0.403 -0.083l-0.149 -0.24l0.511 -0.242l-0.404 0.118l-0.128 -0.066l-0.107 -0.402l1.769 -0.104l0.261 0.189l0.001 -0.138l0.564 -0.12l-0.2 -0.011l-0.057 -0.079l0.096 -0.134l-0.112 0.063l-0.055 0.191l-0.333 0.02l-0.286 -0.046l-0.057 -0.083l-0.217 0.156l-1.058 0.026l-0.303 -0.143l-0.032 -0.127l0.349 -0.107l-0.342 -0.16l-0.087 -0.165l0.075 -0.09l1.031 0.112l0.715 -0.082l-0.6 0.018l-0.864 -0.084l-0.171 -0.091l0.047 -0.133l0.215 0.008l0.36 -0.227l0.491 0.026l0.483 -0.115l-0.556 0.061l0.217 -0.204l1.217 0.063l0.121 -0.038l-0.164 -0.024l0.011 -0.062l0.558 -0.06l-1.361 0.011l0.205 -0.209l0.632 -0.17l0.529 0.009l0.522 0.245l-0.465 -0.316l0.113 -0.125l0.365 -0.055l-0.042 -0.084l-0.233 -0.073l0.215 -0.102l0.56 0.007l-0.06 0.094l0.08 0.041l0.168 -0.111l0.373 -0.055l0.324 0.234l0.739 -0.07l-0.086 -0.097l0.051 -0.067l0.646 -0.18l-0.195 -0.094l0.282 -0.104l-0.151 -0.046l-0.393 0.128l0.133 0.076l-0.112 0.075l-0.88 0.257l-0.131 -0.009l-0.157 -0.178l-0.2 -0.006l0.999 -0.712l1.067 -0.396l-0.336 0.059l0.053 -0.151l0.139 -0.07l0.671 -0.203l0.147 0.093l0.201 -0.013l0.408 -0.24l-0.498 0.155l-0.284 -0.095l0.139 -0.289l0.416 -0.334l0.344 -0.054l-0.249 -0.144l0.89 -0.08l0.36 -0.118l-0.915 0.067l-0.051 -0.2l0.143 -0.21l0.41 -0.154l0.338 0.001l-0.307 -0.113l0.457 -0.212l1.307 -0.083l-0.974 -0.069l0.52 -0.303l0.447 0.1l0.185 0.125l-0.018 -0.095l0.116 -0.077l-0.443 -0.081l0.055 -0.163l-0.523 0.09l0.018 -0.134l0.335 -0.164l0.487 0.025l-0.328 -0.088l0.715 -0.193l0.304 0.348l-0.053 -0.12l0.133 -0.091l-0.132 -0.053l-0.056 -0.172l0.184 -0.073l0.563 0.035l0.602 -0.071l-0.127 -0.056l-0.841 0.016l-0.071 -0.067l0.877 -0.266l0.314 -0.301l0.396 -0.056l-0.022 -0.169l0.181 -0.146l0.599 0.157l0.057 -0.022l-0.302 -0.155l0.377 -0.07l0.206 -0.187l0.49 -0.057l-0.045 0.381l0.319 -0.401l0.363 -0.12l0.063 0.077l-0.049 0.251l-0.294 0.261l0.063 0.015l0.38 -0.201l0.252 0.021l-0.206 -0.171l0.089 -0.222l0.541 0.024l0.091 -0.113l0.179 -0.01l0.542 0.178l-0.172 -0.231l-0.447 -0.167l0.966 -0.032l0.363 -0.11l0.256 0.07l0.105 0.203l0.308 0.119l0.046 -0.037l-0.114 -0.085l0.093 -0.142l0.659 -0.238l0.382 -0.217l-0.157 -0.124l0.502 -0.182l0.5 0.164l0.171 -0.068l0.345 0.095l-0.507 0.265l-0.28 0.334l0.05 0.109l0.375 -0.126l0.052 -0.106l1.036 -0.572l0.154 -0.027l0.073 0.086l-0.176 0.185l0.087 0.033l-0.06 0.226l0.404 -0.101l0.32 -0.293l0.237 -0l-0.311 -0.143l0.097 -0.05l0.265 -0.094l0.545 0.048l0.25 0.068l-0.009 0.106l-0.485 0.191l0.374 0.01l-0.069 0.091l-0.01 0.328l0.416 -0.511l0.223 -0.104l0.27 0.003l0.636 0.214l0.327 -0.056l0.173 0.081l-0.025 0.079l0.383 0.019l0.365 0.18l-0.017 0.07l-0.681 0.149l-1.482 -0.02l0.82 0.168l0.094 0.232l0.393 0.027l0.15 -0.144l0.19 0.14l0.056 -0.073l0.23 -0.001l0.833 0.099l0.242 -0.119l0.209 0.006l-0.013 -0.144l1.023 0.232l-0.093 0.12l-0.823 -0.031l0.286 0.154l0.622 0.009l-0.021 0.103l0.475 -0.061l-0.126 0.276l-0.187 0.083l0.295 -0.061l0.248 -0.18l1.326 0.089l0.28 -0.054l0.568 0.083l1.873 0.5l0.699 0.336l0.402 0.031l0.737 0.253l0.254 0.013l-0.077 -0.103l0.063 0.011l0.572 0.319l0.585 0.119l0.168 0.446l0.225 0.057l-0.17 0.384l-0.667 0.379l-0.419 0.147l-1.449 0.231l-0.753 -0.027l-0.917 -0.177l-1.471 -0.123l-0.688 -0.215l-0.342 0.061l-0.087 -0.063l0.056 -0.038l-1.302 -0.193l-0.302 -0.178l0.082 -0.065l-1.035 -0.074l0.606 0.157l-0.037 0.088l0.398 0.195l0.319 0.041l0.036 0.148l0.439 0.089l-0.295 0.113l0.752 0.105l0.579 0.273l0.085 0.184l-0.161 0.258l-0.21 0.114l0.398 0.41l0.029 0.186l0.119 0.044l-0.094 0.049l0.012 0.147l0.165 0.12l0.397 0.093l0.215 -0.031l0.499 0.189l0.219 0.186l1.077 0.19l0.526 -0.136l0.094 -0.142l-0.108 -0.229l-0.213 -0.077l-0.557 -0.011l-0.605 -0.383l-0.044 -0.148l0.251 -0.048l0.097 -0.185l0.258 -0.022l0.387 0.086l0.481 0.229l1.749 0.302l0.3 -0.194l0.387 -0.008l-0.164 -0.219l-0.483 -0.352l-0.049 -0.098l0.068 -0.15l0.511 -0.154l0.364 -0.211l0.784 -0.16l0.735 -0.397l0.391 0.097l0.631 0.007l0.42 0.165l-0.111 0.128l0.302 -0.019l0.26 0.133l-0.007 -0.226l0.392 -0.437l-0.06 -0.266l-0.137 -0.162l-0.51 -0.154l0.443 -0.742l-0.02 -0.258l-0.036 -0.073l-0.836 -0.346l0.715 0.124l1.03 -0.029l0.814 0.098l0.792 0.51l0.006 0.121l-1.161 0.091l-0.627 0.345l0.66 0.227l0.323 0.295l0.607 0.091l1.164 -0.176l0.252 -0.479l-0.033 -0.129l0.958 -0.097l0.045 -0.05l-0.182 -0.143l0.058 -0.022l0.401 0.026l1.544 -0.448l1.296 -0.221l0.29 0.08l-0.102 0.085l0.214 0.022l0.326 -0.132l-0.379 -0.124l1.458 -0.388l0.689 0.004l-0.693 0.085l0.173 0.063l-0.212 0.21l0.159 0.097l0.013 0.101l-0.588 0.093l-0.082 0.076l0.707 0.04l0.508 -0.067l0.242 0.11l0.143 -0.018l0.062 -0.172l0.495 -0.194l0.626 -0.081l1.083 0.095l1.046 -0.336l0.064 0.056l0.117 -0.082l0.703 -0.09l0.314 0.268l-0.259 0.122l-0.013 0.172l0.627 0.092l0.197 -0.119l-0.027 -0.235l0.593 -0.023l0.445 -0.258l-0.075 -0.159l-0.194 0.036l-0.494 -0.481l0.738 -0.256l2.452 0.172l0.829 0.14l0.739 0.21l-0.033 0.077l2.106 0.374l0.729 0.36l0.64 0.2l0.133 -0.034l0.325 -0.219l0.312 -0.384l-0.598 -0.016l-0.426 -0.269l-0.111 -0.244l-0.382 -0.104l-0.56 -0.11l-0.167 0.14l-0.094 -0.186l0.123 -0.274l0.313 -0.094l-0.093 -0.112l0.139 -0.519l-0.142 -0.099l-0.441 0.019l-0.036 -0.082l0.181 -0.163l-0.207 -0.017l0.278 -0.201l0.624 -0.13l0.727 -0.271l0.338 -0.33l0.432 -0.657l0.352 -0.286l0.303 -0.022l-0.049 0.08l0.093 0.013l1.879 -0.017l1.195 0.211l-0.059 0.348l-0.179 0.33l-0.295 0.317l-0.367 0.148l-0.045 0.091l0.212 0.15l0.502 0.156l0.123 0.188l-0.004 0.506l-0.231 0.182l0.13 0.482l0.017 0.309l-0.089 0.33l0.05 0.185l0.235 0.154l0.736 0.24l0.044 0.093l-0.453 0.301l0.034 0.208l-0.106 0.206l-0.473 0.18l-0.747 0.579l-0.179 0.068l-0.303 -0.022l0.186 0.202l-0.011 0.077l-0.815 0.164l-0.342 -0.083l0.308 -0.143l-0.408 0.059l-0.406 -0.159l-0.864 0.057l0.181 0.209l0.788 0.178l1.376 0.042l0.71 0.106l0.254 -0.079l0.095 -0.229l1.375 -0.434l0.283 -0.419l0.695 -0.352l-0.027 -0.308l-0.352 -0.347l0.189 -0.33l0.545 -0.111l1.334 -0.116l0.779 0.508l0.01 0.529l-0.074 0.162l0.598 0.209l1.15 -0.019l-1.334 -0.163l-0.052 -0.256l0.129 -0.182l0.33 -0.069l-0.344 -0.644l-1.65 -0.332l-0.581 -0.004l-0.605 0.148l-0.838 -0.024l-0.201 -0.083l0.115 -0.22l-0.331 -0.289l0.018 -0.096l0.252 -0.373l0.513 -0.403l-0.766 -0.638l-0.491 -0.228l0.586 -0.4l1.32 -0.3l0.098 -0.118l-0.03 -0.286l-0.273 -0.263l0.365 -0.041l0.217 0.056l0.235 0.216l-0.013 0.124l0.15 0.161l-0.346 0.313l-0.121 0.024l-0.027 0.146l0.256 0.158l-0.034 0.121l-0.189 0.104l0.052 0.088l0.402 0.076l1.008 0.064l0.187 0.074l0.661 -0.04l0.731 0.238l0.694 -0.02l0.069 -0.052l-0.593 -0.023l-0.278 -0.241l-0.732 -0.046l-1.048 -0.24l-0.401 -0.358l0.839 -0.123l0.68 0.191l0.636 -0.065l0.045 -0.045l-0.216 -0.14l-0.605 -0.016l0.061 -0.084l0.496 -0.137l0.515 -0.066l0.939 0.014l1.341 0.292l0.093 0.119l0.806 0.254l1.445 -0.005l0.127 0.053l-0.257 0.217l-0.654 0.191l-0.084 0.262l0.097 0.191l-0.173 0.209l0.058 0.202l0.037 -0.148l0.334 -0.346l0.277 -0.065l0.141 0.06l0.02 0.314l-0.348 0.363l0.175 0.113l0.224 0.012l0.051 -0.064l-0.058 -0.12l0.423 -0.068l0.239 -0.201l-0.157 -0.22l-0.428 -0.338l0.399 -0.44l-0.016 -0.14l-0.334 -0.191l-0.555 -0.05l-0.551 -0.34l-0.996 -0.125l-0.271 -0.098l-0.171 -0.224l0.186 -0.237l-0.332 -0.137l-0.085 -0.145l-0.027 -0.126l0.198 -0.117l-0.013 -0.094l4.155 -0.195l0.463 0.041l0.41 -0.1l1.282 -0.065l0.136 0.063l-1.236 0.386l0.025 0.111l0.859 0.22l-0.767 -0.283l0.182 -0.129l1.028 -0.096l0.451 -0.196l-0.361 -0.068l-0.639 -0.365l-0.57 -0.072l0.395 -0.134l0.502 0.125l0.332 -0.039l-0.804 -0.221l-0.635 -0.06l0.09 -0.095l0.178 0.012l0.142 -0.088l0.45 0.134l0.212 -0.036l0.605 -0.295l-0.529 -0.055l0.067 -0.102l0.665 0.04l2.514 -0.461l1.294 -0.059l2.677 -0.309l-1.169 0.056l-0.128 -0.076l0.113 -0.096l0.133 0.049l0.154 -0.073l0.389 0.045l0.928 -0.098l1.003 0.015l0.496 0.055l-0.422 0.19l0.948 -0.098l-0.104 0.099l0.854 -0.142l0.148 0.053l0.171 -0.098l0.992 -0.165l1.108 0.214l-0.168 0.177l-0.16 0.049l0.099 0.004l0.31 -0.131l-0.026 -0.206l-1.019 -0.345l2.038 -0.044l0.754 0.086l0.086 -0.046l-0.756 -0.072l0.171 -0.147l-0.193 -0.197l0.612 -0.297l1.092 -0.311l1.405 -0.221l1.695 0.205l0.35 0.134l-1.858 0.289l1.444 0.001l0.066 0.1l0.11 0.003l1.12 -0.036l0.488 0.107l-0.791 0.354l-0.254 -0.016l0.029 0.077l1.308 -0.01l0.46 -0.216l2.933 0.015l0.979 0.243l-0.151 0.1l0.354 -0.055l0.323 0.051l0.178 0.254l-0.142 0.076l0.494 -0.121l-0.162 -0.065l0.285 -0.012l0.291 0.36l0.293 -0.029l-0.108 0.216l-0.181 0.137l-0.176 -0.11l-0.926 -0.166l0.49 0.272l0.287 -0.039l0.483 0.16l-0.112 0.158l-0.689 0.278l-3.085 0.693l0.071 0.061l-0.101 0.092l-0.735 0.137l-0.875 0.338l-0.929 0.073l-0.592 0.29l-0.49 0.023l-0.512 0.349l-0.533 0.182l0.564 -0.06l0.77 -0.302l1.272 -0.034l1.34 -0.205l0.241 -0.109l0.524 0.015l1.013 -0.259l-0.146 -0.049l-0.969 0.057l-0.087 -0.077l0.203 -0.131l0.392 -0.086l0.795 0.078l0.075 -0.114l0.42 0.024l-0.323 0.06l0.172 0.141l0.747 0.119l0.648 -0.037l0.145 -0.09l-0.104 -0.126l0.197 0.048l0.383 0.266l-0.259 0.188l0.334 0.114l-0.016 0.298l-0.347 0.217l0.184 0.174l0.353 0.022l0.047 -0.019l-0.496 -0.152l0.327 -0.248l0.016 -0.179l0.327 -0.113l-0.347 -0.088l-0.029 -0.071l0.551 -0.08l1.277 -0.118l3.112 0.113l0.486 0.109l-0.479 0.017l-0.08 0.097l0.053 0.12l1.32 0.268l1.998 0.009l0.789 0.092l0.215 -0.028l-0.25 -0.065l0.025 -0.046l0.633 0.062l0.462 -0.238l-0.299 -0.238l-0.018 -0.102l0.111 -0.104l1.125 -0.114l1.076 0.23l-0.018 0.074l0.655 -0.101l0.091 0.042l-0.053 0.112l0.261 0.059l0.478 -0.212l0.709 0.065l0.541 0.151l-0.023 0.064l0.329 0.005l0.302 0.072l0.024 0.079l0.188 -0.001l-0.502 0.217l0.418 0.023l0.233 0.167l-0.832 0.17l0.863 0.097l0.131 0.123l-0.001 0.149l-0.128 0.074l-0.348 0.013l-1.209 -0.334l1.185 0.658l0.206 -0.07l0.005 -0.128l0.088 0.036l0.251 0.178l-0.618 0.076l0.291 0.07l0.628 0.473l0.775 0.227l0.22 -0.069l0.265 0.216l0.54 -0.155l0.473 -0.343l-0.031 -0.106l0.224 -0.293l0.426 -0.283l0.477 0.319l0.558 0.173l1.014 0.047l0.856 -0.223l0.531 -0.01l1.026 0.204l0.824 0.283l0.052 -0.01l-0.148 -0.084l0.47 -0.099l-0.396 -0.058l0.316 -0.212l0.291 0.033l0.255 -0.066l0.429 0.184l0.775 -0.047l-0.289 -0.208l0.028 -0.185l-0.364 -0.066l0.281 -0.047l0.207 -0.151l0.341 -0.042l-0.571 -0.035l-0.441 0.063l-0.035 -0.167l0.46 -0.166l0.85 0.003l0.628 -0.094l-0.106 -0.13l-0.321 -0.126l0.156 -0.048l1.253 0.17l1.455 0.023l2.737 0.256l-0.018 0.092l-1.338 -0.046l-0.728 0.137l0.302 0.084l0.568 -0.085l1.793 -0.035l-0.233 0.171l-0.486 0.179l-0.107 -0l0.224 -0.193l-0.471 -0.088l-0.095 0.159l0.093 0.126l-0.693 0.015l-0.074 0.173l0.199 0.057l0.884 -0.112l1.189 -0.52l1.14 0.016l1.1 0.148l0.461 0.172l0.054 0.096l-0.968 0.1l-0.126 0.081l0.934 0.114l0.204 0.09l0.539 -0.009l0.068 0.065l-0.57 0.228l0.87 -0.153l0.614 0.093l0.511 0.264l-0.331 0.041l0.747 0.148l1.285 -0.046l2.101 -0.216l1.552 0.021l1.255 0.14l0.649 0.144l0.561 0.285l0.094 0.196l-0.277 0.44l0.104 0.085l1.078 0.179l0.125 0.508l0.305 0.193l-0.212 0.251l-0.273 0.116l0.248 -0.025l0.261 -0.26l0.201 -0.082l-0.086 -0.297l0.057 -0.178l0.629 -0.232l1.035 -0.103l0.745 -0.02l0.567 0.126l2.307 0.109l0.808 -0.24l0.229 0.012l0.293 0.151l0.153 0.306l1.008 0.191l0.299 0.294l0.928 -0.039l0.457 -0.22l0.002 -0.09l-0.415 -0.448l-0.421 -0.044l0.342 -0.23l-0.016 -0.251l2.073 0.14l0.717 0.144l0.162 -0.123l1.347 0.091l1.135 -0.039l1.003 0.249l1.924 0.259l0.103 0.091l0.322 0.036l0.727 0.277l0 3.916l-0.552 0.245l-0.928 0.219l-0.771 -0.114l-0.57 -0.297l-0.298 -0.068l-0.54 0.035l0.696 0.047l0.186 0.138l-0.154 0.075l-1.008 -0.174l-0.28 0.117l-1.232 0.16l1.129 -0.098l0.379 -0.123l0.19 0.062l0.104 0.138l-0.21 0.119l0.367 -0.096l0.335 0.048l0.544 -0.14l0.08 0.037l-0.034 0.293l0.255 0.139l0.357 0.085l0.184 -0.144l0.248 0.236l-0.026 0.117l0.199 0.046l0.042 0.123l0.039 0.175l-0.265 0.093l0.188 0.017l0.025 0.155l0.065 0.007l0.049 -0.145l0.128 0.195l0.411 0.155l0.073 0.112l-0.145 0.07l0.311 0.235l-0.094 0.16l-0.3 0.144l-0.056 0.149l-1.102 -0.227l-0.726 -0.052l0.046 -0.182l-0.315 0.004l-0.059 0.118l0.194 0.098l-0.456 0.055l-0.375 0.16l-1.613 0.398l-0.201 0.124l-0.692 0.145l-0.199 -0.037l-0.491 0.309l-0.275 -0.062l-0.05 0.033l0.101 0.124l-0.177 -0.002l-0.146 0.124l-0.189 0.023l-0.003 0.105l-1.785 0.627l-0.257 0.469l-0.368 -0.101l-0.365 -0.371l-0.391 -0.158l-1.09 0.022l-0.91 0.168l-0.954 0.55l-0.086 0.007l-0.051 -0.13l0.216 -0.506l-1.267 0.386l-0.011 0.153l-0.12 0.102l-0.175 -0.03l-0.254 -0.187l-0.148 0.003l-0.264 0.16l0.022 -0.086l-0.391 -0.044l-0.379 0.247l-0.092 0.478l-0.188 0.172l-0.145 0.017l0.03 0.128l-0.828 0.539l-0.182 0.37l0.08 0.159l0.371 0.14l-0.02 0.061l0.131 -0.187l0.132 -0.044l0.572 0.158l-0.038 0.153l-0.409 0.279l-0.017 0.114l0.041 0.433l0.119 0.088l0.335 0.035l0.079 0.455l-0.289 0.188l-0.207 -0.021l-0.212 -0.166l0.41 -0.29l-0.367 0.032l-0.182 0.091l0.039 0.138l-0.443 0.171l-0.361 0.594l0.061 0.291l0.295 0.319l0.026 0.134l-0.481 0.236l-0.495 -0.082l-0.357 0.057l-0.699 0.352l-0.23 0.405l0.112 0.232l-0.058 0.171l0.127 0.251l-0.439 -0.108l-0.634 0.19l-0.207 0.139l-0.18 -0.141l-0.093 0.018l-0.04 0.075l0.177 0.083l-0.128 0.247l0.012 0.244l-0.389 0.573l-1.356 0.841l-0.077 -0.258l-0.15 -0.153l-0.156 -1.129l-0.255 -0.357l-0.546 -2.333l0.153 -0.873l0.266 -0.623l0.866 -0.595l0.128 -0.176l-0.147 -0.314l0.62 -0.019l0.216 -0.221l0.609 0.011l0.174 -0.154l0.762 -0.356l0.381 -0.285l0.255 -0.323l1.907 -1.025l0.314 -0.314l0.905 -0.317l0.379 -0.017l0.358 -0.117l-0.156 -0.109l0.451 -0.318l-0.201 -0.117l0.079 -0.179l0.137 -0.071l0.054 -0.334l0.133 -0.247l0.391 -0.179l0.61 0.097l0.006 -0.074l0.203 0.001l-0.02 -0.047l-0.605 -0.077l-0.374 -0.134l-1.086 0.154l-0.314 0.66l-0.009 0.099l0.249 0.093l-0.173 0.128l-0.091 0.027l-0.138 -0.161l-0.463 0.043l-1.356 0.699l-0.27 0.21l-0.593 0.115l0.205 -0.387l-0.589 0.068l0.159 -0.172l-0.066 -0.163l0.364 -0.356l0.062 -0.246l-0.757 0.175l-0.363 -0.21l-1.119 0.175l-0.601 -0.045l-0.385 0.123l-0.404 0.195l-0.05 0.209l-0.574 0.276l-0.34 0.314l-0.745 0.305l-0.393 0.282l-0.137 0.211l-0.148 0.051l-0.024 0.175l-0.119 0.129l0.122 0.054l0.311 -0.065l0.388 0.09l0.196 0.09l-0.007 0.17l-0.456 0.049l-0.246 -0.076l-0.447 0.141l-0.316 -0.149l-0.334 0.01l-0.088 0.124l-0.195 0.009l-0.26 0.156l-0.498 -0.105l-0.232 0.121l-0.761 0.035l-0.206 -0.208l1.14 -0.141l-0.463 -0.099l-0.45 -0.238l-0.314 -0.025l-0.211 0.125l-0.339 -0.033l0.183 -0.062l-1.024 -0.214l-0.578 0.139l0.14 0.143l-0.408 -0.044l-0.088 0.083l0.035 0.075l0.221 0.005l-0.051 0.086l-0.187 0.025l-0.236 -0.004l-0.234 -0.152l-0.743 0.145l-0.977 -0.188l-0.264 0.236l-0.223 0.05l-0.294 -0.203l-0.201 -0.04l-1.686 0.003l-1.289 0.171l-0.555 0.24l-0.422 0.351l-0.813 0.346l-0.343 0.489l-0.445 0.127l-0.199 0.173l-1.141 0.548l-0.97 0.827l-2.43 1.196l-0.004 0.212l0.594 0.147l0.945 -0.037l-0.078 0.817l0.436 -0.018l0.103 -0.203l-0.162 -0.104l0.046 -0.053l0.236 -0.1l0.288 -0.001l-0.327 0.182l0.496 0.154l-0.581 0.401l0.696 -0.058l0.303 -0.122l0.126 -0.183l0.149 -0.051l0.041 0.141l-0.319 0.295l0.201 -0.013l0.21 -0.208l0.035 -0.575l0.624 0.127l0.476 -0.063l0.383 0.204l0.168 0.239l0.341 0.217l0.686 0.303l0.028 0.109l-0.221 0.169l-0.341 -0.073l0.416 0.248l-0.011 0.29l-0.113 0.114l0.353 0.257l-0.118 0.258l-0.434 0.301l-0.412 0.82l-0.045 0.254l0.059 0.415l0.09 0.049l-0.162 0.171l0.054 0.315l-0.208 0.542l0.069 0.09l-0.154 0.191l-0.111 0.35l-0.74 0.536l-0.372 0.504l-0.414 0.326l-0.25 0.514l-0.652 0.725l-0.881 0.647l-0.662 0.682l-0.267 0.115l-0.392 0.539l-0.352 0.309l-1.121 0.579l-0.85 0.25l-0.451 -0.179l-0.405 -0.007l0.006 -0.431l-0.363 0.219l-0.08 -0l0.146 -0.185l-0.218 0.025l-0.637 0.629l-0.449 -0.03l0.125 0.133l-0.104 0.197l-0.272 0.024l-0.222 0.119l-0.48 0.471l-0.07 0.117l0.08 0.291l-0.057 0.447l-0.368 0.131l-0.231 0.235l-0.409 0.173l-0.19 0.188l-0.544 0.134l-0.399 0.214l-0.019 0.321l-0.026 0.084l-0.101 0.003l-0.027 0.166l0.391 0.124l0.543 0.403l0.29 0.505l0.716 0.901l0.083 0.216l0.055 0.317l-0.069 0.69l0.169 0.001l-0.011 0.103l-0.143 0.45l-0.205 0.316l-0.234 0.08l-0.469 0.001l-0.092 0.085l0.025 0.146l-0.349 -0.064l-0.059 -0.088l-0.321 0.067l-0.076 0.065l0.076 0.169l-0.083 0.031l-0.108 -0.15l-0.12 0.017l0.075 0.198l-0.154 0.162l-0.152 -0.083l0.074 -0.209l-0.35 0.316l-0.142 -0.073l-0.224 0.198l-0.049 -0.18l-0.218 -0.179l0.261 -0.025l-0.052 -0.058l0.12 -0.068l-0.172 0.001l-0.13 -0.331l0.202 -0.347l0.121 -0.07l-0.126 -0.076l0.229 -0.122l0.036 -0.103l-0.106 -0.05l0.046 -0.092l-0.153 -0.152l-0.052 -0.528l-0.307 0.002l-0.02 -0.08l0.326 -0.235l0.297 0.059l0.088 0.124l0.105 -0.115l-0.108 -0.037l-0.123 -0.218l0.045 -0.101l-0.141 -0.152l-0.087 -0.27l0.071 -0.065l-0.264 -0.096l-0.253 0.135l-0.067 -0.127l-0.281 -0.115l-0.411 0.26l-0.047 -0.119l-0.322 -0.087l0.218 -0.151l-0.516 -0.047l0.184 -0.104l0.006 -0.109l0.186 -0.215l0.487 -0.129l-0.385 -0.12l0.241 -0.482l-0.049 -0.239l-0.586 -0.231l-0.137 0.143l-0.081 -0.176l-0.208 -0.116l0.001 -0.105l-0.244 0.171l-0.455 -0.041l-0.07 0.096l-0.741 0.185l-0.505 0.235l-0.353 0.313l-0.305 0.05l-0.027 0.138l-0.486 0.133l-0.057 -0.189l0.573 -0.188l-0.052 -0.111l0.19 -0.167l-0.543 0.002l-0.008 -0.16l0.251 -0.094l-0.001 -0.206l0.284 -0.106l0.463 -0.549l-0.124 -0.188l-0.281 -0.154l-0.024 -0.132l-0.106 0.128l-0.554 -0.055l-0.404 0.312l-0.292 0.358l-0.888 0.328l-0.2 0.151l-0.166 0.344l-0.248 0.225l-0.351 0.006l-0.328 0.11l-0.257 -0.16l-0.256 0.093l-0.231 0.443l0.102 0.267l0.359 0.241l0.528 0.088l0.257 -0.032l0.14 0.084l0.149 0.342l-0.098 0.06l-0.038 0.31l0.334 0.193l0.474 -0.017l0.127 -0.098l-0.005 -0.098l0.429 -0.272l-0.055 -0.056l0.493 -0.155l0.89 0.374l0.325 0.015l0.092 -0.084l0.281 0.124l0.329 0.002l-0.094 0.085l0.014 0.137l-0.14 0.113l0.073 0.121l-0.179 0.115l-0.179 -0.127l-0.229 -0l-0.879 0.348l-0.243 -0.022l0.085 0.189l-0.184 0.031l-0.074 0.283l-0.245 0.076l-0.065 -0.174l-0.145 0.026l-0.089 0.083l0.191 0.135l-0.855 0.683l-0.265 0.452l0.036 0.101l0.15 -0.001l0.916 0.475l0.238 0.636l0.366 0.621l-0.018 0.356l0.489 0.236l0.062 0.219l0.347 0.213l0.105 0.177l0.01 0.112l-0.185 -0.008l-0.329 -0.147l-0.378 -0.01l-0.182 -0.163l-0.272 -0.074l-0.484 0.17l0.156 0.03l0.305 -0.114l0.219 0.036l0.072 0.164l0.873 0.5l0.217 0.403l-0.459 0.127l-0.421 0.232l-0.177 0.203l-0.371 -0.033l-0.255 0.147l0.3 -0.062l0.138 0.17l0.625 -0.171l0.42 0.325l0.405 0.109l-0.577 0.385l0.382 -0.143l0.08 0.137l-0.05 0.356l-0.201 -0.121l-0.183 0.019l-0.086 0.106l0.232 0.178l-0.14 0.021l0.122 0.081l-0.187 0.21l0.135 0.349l-0.1 -0.032l-0.238 0.102l-0.055 -0.124l-0.071 0.019l-0.187 0.29l-0.211 0.027l0.085 0.119l-0.245 0.31l0.02 0.169l-0.329 0.315l-0.192 0.425l-0.205 0.062l-0.058 -0.236l-0.114 0.117l-0.122 -0.056l0.293 0.451l-0.418 0.279l-0.324 -0.067l0.193 0.173l0.287 -0.055l-0.08 0.413l0.083 0.2l-0.442 -0.059l-0.011 0.094l0.117 0.124l-0.308 0.023l-0.069 0.28l-0.272 0.093l0.082 0.09l-0.062 0.125l-0.362 0.048l-0.208 -0.054l-0.081 0.145l-0.163 0.008l0.036 0.078l0.145 0.016l0.032 0.134l-0.217 0.234l-0.097 -0.003l-0.114 0.178l-0.162 -0.004l-0.098 0.252l-0.077 -0.125l-0.208 0.135l-0.172 -0.068l-0.05 0.194l-0.232 0.099l0.07 0.076l-0.161 0.098l-0.067 0.234l-0.219 -0.035l-0.4 0.179l-0.212 -0.051l-0.142 0.134l-0.302 -0.098l-0.342 0.2l-0.104 -0.009l-0.098 -0.129l-0.098 0.226l-0.213 -0.064l-0.075 0.052l0.069 0.145l-0.067 0.1l-0.365 -0.1l0.112 -0.116l-0.187 -0.095l-0.208 -0.254l0.001 -0.266l-0.101 0.025l-0.078 0.161l-0.111 0.029l0.222 0.318l-0.005 0.371l-0.399 0.148l-0.06 -0.133l-0.135 0.301l-0.145 -0.038l-0.223 0.168l-0.226 -0.201l0.03 0.177l-0.085 0.059l-0.361 -0.108l-0.071 0.133l-0.097 -0.002l-0.173 0.16l-0.586 0.047l-0.02 0.082l-0.226 0.043l-0.204 0.173l-0.109 -0.017l-0.047 -0.107l-0.036 0.166l-0.221 0.227l0.026 0.086l0.185 0.021l-0.052 0.166l0.199 0.154l-0.167 0.223l-0.407 -0l-0.052 -0.118l0.082 -0.035l-0.107 -0.066l-0.198 -0.403l0.018 -0.215l0.099 -0.205l0.141 -0.039l0.01 -0.105l-0.244 -0.044l-0.166 -0.168l0.023 0.155l-0.462 0.098l0.02 -0.15l-0.33 -0.04l-0.156 -0.14l-0.022 -0.131l-0.114 -0.004l0.022 0.272l-0.177 -0.061l-0.079 0.136l-0.437 0.061l-0.399 0.212l-0.056 0.23l-0.189 0.106l-0.482 -0.051l0.07 0.265l-0.202 0.208l-0.033 0.238l-0.352 0.297l-0.182 0.053l-0.362 0.973l0.266 0.464l0.611 0.556l-0.02 0.226l-0.108 -0.027l1.463 1.425l0.195 -0.009l0.549 0.746l0.243 0.207l0.264 0.662l0.218 0.86l-0.015 0.091l-0.041 -0.09l0.025 0.576l0.152 0.323l0.021 0.356l-0.109 -0.152l-0.117 0.106l0.086 0.255l-0.098 -0.024l0.052 0.46l-0.06 -0.044l-0 0.274l-0.066 0.124l-0.093 0.008l-0.053 0.257l-0.166 0.021l-0.549 0.381l-0.177 0.037l-0.094 0.177l-0.739 0.322l-0.174 -0.1l-0.081 -0.163l-0.06 0.261l-0.22 -0.136l-0.121 0.071l0.135 0.021l0.016 0.148l-0.293 -0.002l0.321 0.182l-0.189 0.256l-0.46 -0.362l0.371 0.401l0.065 0.18l-0.194 0.085l-0.547 -0.445l0.328 0.407l0.009 0.197l-0.667 0.304l-0.387 0.464l-0.344 0.031l0.126 -0.149l-0.077 -0.055l0.026 -0.804l0.058 -0.21l0.19 -0.085l-0.065 -0.166l-0.226 -0.136l-0.139 0.033l-0.401 -0.371l-0.391 -0.114l-0.209 0.146l-0.075 -0.043l-0.047 -0.117l0.141 -0.09l0.041 -0.131l-0.19 -0.257l-0.178 0.225l-0.201 0.008l-0.028 -0.547l-0.531 -0.742l-0.054 0.094l-0.281 -0.285l-0.029 0.062l-0.196 -0.2l-0.31 -0.157l-0.279 0.07l-0.547 -0.035l0.065 -0.778l-0.36 -0.136l-0.586 0.215l-0.026 0.11l0.099 0.197l-0.126 0.356l0.025 0.519l-0.362 0.708l-0.14 0.573l-0.322 0.57l-0.004 0.586l0.127 0.319l-0.034 0.15l0.14 0.051l0.442 -0.074l0.154 0.699l0.139 0.161l0.034 -0.08l0.116 0.239l0.266 1.042l-0.106 -0.054l-0.059 -0.261l-0.096 -0.01l0.033 -0.164l-0.06 -0.059l-0.099 0.047l0.003 0.129l0.263 0.411l0.162 0.012l0.432 0.315l0.48 -0.004l0.301 0.39l0.302 0.233l0.239 0.07l0.194 0.309l0.448 0.338l0.215 0.263l0.257 0.593l-0.092 0.9l0.092 0.248l-0.015 0.588l0.373 0.353l0.156 0.319l0.32 0.78l-0.112 0.116l-0.195 -0.259l0.011 0.169l-0.297 0.005l-0.215 0.121l-0.123 -0.217l-0.63 -0.31l-1.431 -1.029l0.058 -0.126l-0.054 -0.242l-0.585 -0.713l0.081 -0.057l-0.181 -0.35l-0 -0.279l-0.262 -0.936l-0.01 -0.396l-0.224 -0.458l-0.423 -0.435l0.024 -0.229l-0.167 -0.113l0.044 -0.137l-0.238 -0.016l-0.095 -0.247l-0.186 -0.099l-0.027 -0.17l-0.262 -0.172l-0.085 -0.197l-0.125 -0.087l-0.158 0.166l-0.116 -0.048l-0.063 -0.542l0.461 -1.422l-0.14 0.155l-0.098 -0.641l0.211 -0.311l0.065 -0.605l0.135 -0.128l-0.071 -0.059l-0.169 0.041l0.06 -0.487l-0.096 -0.02l0.079 -0.103l-0.103 -0.814l-0.331 -0.571l-0.045 -0.247l-0.05 0.332l-0.039 -0.065l-0.011 -0.449l-0.19 -0.491l0.109 0l-0.207 -0.206l-0.102 -1.017l-0.126 -0.144l0.05 -0.438l0.092 -0.111l-0.35 0.046l-0.176 -0.572l-0.349 -0.306l0.058 0.37l-0.144 0.321l-0.334 0.205l-0.242 -0.263l0.135 0.324l-0.561 0.275l-0.084 0.192l-0.289 0.254l-0.089 -0.033l0.046 -0.342l-0.17 0.272l-0.234 0.008l-0.05 -0.365l-0.095 0.212l-0.136 0.067l0.041 -0.608l-0.038 0.176l-0.223 0.242l-0.218 0.078l0.047 -0.501l0.293 -0.792l0.025 -0.26l-0.158 -0.633l-0.26 -0.53l0.075 -0.009l-0.176 -0.152l-0.025 -0.394l-0.104 0.141l-0.012 0.246l-0.224 -0.127l-0.212 -0.342l0.086 -0.032l0.246 0.163l0.173 -0.203l-0.386 -0.335l0.095 -0.136l-0.457 -0.158l-0.093 0.029l0.042 0.143l-0.07 0.04l-0.127 -0.217l0.094 -0.106l-0.081 -0.004l0.052 -0.193l-0.185 0.226l-0.054 -0.026l0.063 -0.162l-0.155 -0.223l-0.013 0.267l-0.415 -0.494l-0.252 -0.385l-0.048 -0.51l-0.183 -0.544l0.038 -0.121l-0.066 0.053l-0.317 -0.588l-0.264 0.243l-0.27 0.045l-0.29 -0.428l-0.052 -0.566l-0.048 0.169l-0.287 -0.034l0.322 0.19l0.004 0.132l-0.129 0.08l0.086 0.149l-0.09 0.023l-0.027 0.13l0.181 0.39l-0.385 0.532l-0.16 -0.057l0.139 -0.27l-0.256 0.134l-0.036 -0.093l-0.024 -0.192l0.091 -0.158l-0.103 0.078l-0.07 0.405l-0.243 0.216l-0.086 -0.509l0.018 0.362l-0.147 0.193l-0.12 -0.001l-0.14 -0.151l-0.043 -0.22l-0.023 0.156l-0.079 -0.001l0.103 0.284l-0.145 0.001l-0.049 -0.092l-0.113 0.161l-0.054 -0.149l0.049 -0.272l-0.098 -0.117l-0.057 0.462l-0.139 0.046l-0.159 -0.144l-0.033 0.136l-0.132 -0.014l-0.065 -0.058l0.139 -0.446l-0.255 -0.234l0.021 0.119l0.197 0.133l-0.211 0.297l-0.27 0.171l-0.577 0.153l-0.241 0.264l0.115 0.537l-0.225 0.387l-0.251 0.141l-0.122 0.165l-0.132 -0.046l0.067 0.065l-0.096 0.092l-0.641 0.203l-0.078 -0.004l0.063 -0.056l-0.056 -0.135l-0.255 0.13l-0.068 0.163l0.19 -0.084l0.071 0.052l-0.671 0.502l-0.667 0.832l-0.45 0.223l-0.456 0.461l-0.838 0.513l-0.078 0.16l0.078 0.153l-0.101 0.223l-0.497 0.231l-0.476 -0.008l-0.307 0.579l-0.153 -0.008l-0.044 -0.101l-0.135 -0.028l-0.354 0.184l-0.24 0.637l0.126 0.596l-0.067 0.266l0.195 0.727l-0.151 -0.229l-0.094 0.108l0.28 0.245l-0.113 0.671l-0.371 0.701l-0.104 0.414l0.039 0.128l-0.1 0.134l0.106 -0.026l0.05 0.142l-0.011 0.874l-0.523 0.066l-0.057 0.222l-0.318 0.469l-0.021 0.113l0.101 0.12l0.391 0.141l-0.431 -0.077l-0.559 0.164l-0.229 0.214l-0.132 0.506l-0.542 0.307l-0.452 -0.238l-0.513 -0.587l-0.228 -0.549l-0.083 -0.475l0.101 0.1l0.033 0.287l0.083 0.004l-0.113 -0.386l-0.15 -0.164l-0.472 -1.276l-0.527 -0.696l-0.251 -0.507l-0.564 -1.93l-0.433 -0.58l-0.148 -0.322l0.131 0l-0.16 -0.176l0.061 -0.086l-0.153 -0.05l-0.342 -0.751l-0.182 -1.162l-0.281 -1.021l0.131 -0.378l-0.034 -0.132l-0.137 0.177l-0.032 -0.103l0.009 -0.22l0.175 0.022l-0.199 -0.086l0.011 -0.157l-0.131 -0.311l0.226 -0.842l-0.08 -0.444l-0.122 -0.061l-0.068 -0.194l0.111 -0.099l-0.122 0.009l0.499 -0.288l-0.569 0.053l0.157 -0.275l-0.178 -0.004l0.031 -0.184l0.256 -0.073l-0.626 -0.037l0.123 0.081l-0.032 0.099l-0.237 0.267l0.173 0.095l0.044 0.197l-0.239 0.375l-0.99 0.417l-0.306 -0.001l-0.234 -0.1l-0.451 -0.339l-1.064 -1.111l0.082 -0.147l0.225 0.152l0.9 -0.288l0.336 -0.429l-0.024 -0.088l-0.15 0.15l-0.221 -0.007l-0.453 0.188l-0.429 -0.09l-0.419 -0.205l-0.176 -0.136l-0.224 -0.381l0.36 -0.281l-0.542 0.255l-0.07 -0.26l-0.049 0.104l-0.256 -0.15l-0.192 0.092l-0.022 -0.109l-0.083 0.038l-0.254 -0.293l-0.138 -0.581l-0.468 -0.105l-0.004 -0.365l-0.27 -0.349l-0.21 -0.015l-0.088 0.097l0.337 0.048l-1.691 0.138l-0.118 0.123l-0.6 -0.219l-0.502 0.05l-0.066 0.142l-0.826 -0.054l-0.35 0.13l-0.116 -0.09l-0.291 0.094l-0.375 -0.065l-0.121 0.094l-0.748 -0.18l-0.153 -0.155l-0.111 0.125l-0.944 -0.169l-0.41 0.064l-0.248 -0.138l-0.595 -0.037l-0.266 -0.1l-0.141 0.039l-0.063 -0.072l-0.398 -0.067l-0.231 -0.579l-0.068 -0.43l-0.308 -0.327l-0.372 -0.072l-0.238 0.057l-0.468 0.165l-0.226 0.207l-0.13 -0.015l-0.398 0.229l-0.251 0.048l-0.398 -0.188l-0.541 -0.029l-0.251 -0.217l-0.763 -0.38l-0.216 -0.294l-0.445 -0.207l-0.442 -0.04l-0.31 -0.267l-0.217 -0.595l-0.195 -0.144l0.009 -0.193l-0.201 -0.084l-0.025 -0.273l-0.481 -0.501l-0.097 -0.278l-0.517 0.17l-0.553 -0.345l0.188 -0.001l0.035 -0.097l-0.223 -0.035l0.035 0.057l-0.146 0.122l0.028 0.207l-0.087 0.086l-0.378 0.097l-0.312 -0.103l-0.159 0.03l0.16 0.439l-0.173 -0.045l-0.247 0.224l0.328 0.038l0.133 0.376l0.625 1.083l-0.012 0.172l0.441 0.231l-0.063 0.055l0.23 0.257l0.133 0.029l0.612 0.489l-0.142 -0.016l0.019 0.152l0.187 0.219l-0.059 0.207l-0.123 -0.01l0.049 0.15l0.158 0.338l0.216 0.198l0.103 0.338l0.246 0.298l0.043 -0.1l-0.092 -0.51l0.248 -0.582l0.259 -0.172l0.281 0.251l-0.058 0.377l0.124 0.472l-0.181 0.385l-0.16 0.061l0.15 0.076l-0.108 0.191l0.225 0.054l0.07 -0.052l0.06 0.088l0.103 -0.004l0.075 0.243l0.276 0.04l0.529 -0.184l1.154 0.086l0.346 -0.102l0.249 -0.107l0.35 -0.532l1.194 -0.984l0.223 -0.413l0.249 -0.144l-0.115 0.7l0.065 0.082l0.01 0.551l0.268 0.548l0.579 0.547l1.105 0.299l0.253 -0.019l0.195 0.126l0.656 0.856l0.394 0.152l0.001 0.204l-0.453 0.806l-0.475 0.386l-0.422 0.706l-0.265 -0.017l0.036 -0.175l-0.076 0.009l-0.307 0.346l-0.148 0.566l0.098 0.661l-0.635 0.114l-0.351 0.149l-0.171 0.167l-0.104 0.421l-0.168 0.178l-0.904 0.145l-0.224 0.257l0.02 0.265l-0.211 0.282l-0.292 0.074l-0.205 -0.066l-0.499 0.025l-0.458 0.246l-1.029 0.29l-0.344 0.299l-0.063 0.214l0.043 0.301l-0.895 0.43l-1.972 0.588l-0.302 0.182l-0.38 0.406l-0.39 0.052l-0.288 -0.05l-0.582 0.386l-0.619 0.196l-1.132 0.127l-0.263 0.272l-0.23 0.069l-0.125 0.182l-0.284 0.052l-0.137 -0.053l-0.26 0.148l-0.428 0.052l-0.296 -0.127l-0.146 0.045l-0.256 -0.568l0.05 -0.426l-0.193 -0.318l-0.153 -0.928l-0.08 -0.194l-0.198 -0.1l0.04 -0.093l0.09 0.06l0.011 -0.06l-0.082 -0.329l0.123 -0.377l-0.05 -0.42l-0.091 -0.285l-0.316 -0.385l-0.089 -0.313l-0.636 -0.573l-0.429 -0.67l-0.113 -0.404l-0.357 -0.673l-0.678 -0.511l-0.353 -0.124l-0.452 -0.584l-0.182 -0.336l0.053 -0.209l-0.159 -0.363l0.108 -0.511l-0.034 -0.199l-0.598 -1.12l-0.544 -0.473l-0.377 -0.107l-0.362 -0.528l0.085 -0.14l-0.117 -0.331l-0.228 -0.35l-0.158 -0.11l-0.088 -0.288l-0.156 -0.066l-0.269 -0.49l-1.07 -1.44l-0.458 -0.096l-0.097 0.066l0.155 -0.442l0.193 -1.048l-0.237 0.284l-0.336 1.255l-0.18 0.252l-0.46 -0.284l-0.512 -0.52l-0.118 -0.41l-0.409 -0.544l-0.155 -0.452l-0.093 0.049l-0.113 0.294l0.239 0.309l0.06 0.394l0.543 0.72l0.345 0.31l0.003 0.291l0.299 0.422l0.11 0.536l0.606 0.958l0.629 1.216l0.59 0.537l-0.243 0.017l-0.037 0.142l0.019 0.336l0.175 0.497l0.215 0.206l0.317 0.111l0.64 0.613l0.057 0.429l0.332 0.478l-0.002 0.07l-0.106 -0.065l-0.01 0.122l0.087 0.425l-0.035 0.436l0.055 0.539l0.223 0.762l0.451 0.264l0.28 0.307l0.081 -0.038l0.291 0.214l0.338 0.646l0.387 1.506l0.208 0.389l0.124 0.079l0.155 0.328l0.078 -0.345l0.177 0.135l0.163 0.321l0.342 0.08l0.253 0.191l0.377 0.123l0.482 0.637l0.587 0.395l0.154 0.375l0.124 -0.008l0.273 0.357l0.174 0.056l0.029 -0.092l0.084 0.075l0.271 0.458l0.056 0.177l-0.073 0.163l-0.538 0.288l-0.159 0.179l-0.118 -0.012l0.018 0.068l0.622 -0.062l0.279 0.22l0.412 0.562l0.426 0.312l0.664 0.035l0.874 -0.399l0.748 0.09l0.84 -0.428l0.307 0.062l0.861 -0.209l0.489 0.05l1.048 -0.258l0.356 -0.199l0.17 -0.216l0.156 -0.04l0.463 0.153l-0.171 0.495l0.057 0.679l-0.109 0.212l0.156 -0.035l0.005 -0.075l0.176 0.08l0.016 0.088l-0.176 -0.044l-0.279 0.095l-0.105 0.908l-0.722 1.228l-0.251 0.237l-0.181 0.493l-0.436 0.693l-0.186 0.603l-1.074 1.677l-1.924 2.022l-1.131 0.665l-1.202 0.952l-1.738 1.831l-0.593 0.894l-0.28 0.115l-0.111 -0.031l-0.044 0.105l-0.062 -0.032l0.032 0.17l-0.109 0.198l-0.169 0.147l-0.365 0.09l-0.164 0.622l-0.254 0.326l-0.37 0.901l-0.114 0.147l-0.149 0.041l-0.423 1.404l0.069 0.261l0.672 0.693l-0.258 0.494l-0.001 0.27l0.141 0.025l0.013 0.199l-0.137 0.432l0.184 0.418l-0.037 0.081l0.19 0.249l-0.016 0.217l0.159 0.506l-0.059 0.085l0.664 0.354l0.223 0.308l-0.125 0.103l0.11 0.066l-0.194 0.501l0.129 0.673l-0.045 0.487l0.094 0.144l-0.144 0.347l0.132 0.002l0.027 1.138l0.12 0.091l-0.07 0.325l0.081 -0.118l0.091 0.047l0.017 0.324l-0.217 0.324l0.033 0.145l-0.092 0.212l-0.45 0.506l-0.125 0.246l-0.193 0.07l0.054 0.141l-0.603 0.357l-0.158 0.18l-0.939 0.27l-0.633 0.328l-0.573 0.422l-0.535 0.777l-0.141 -0.05l-0.027 0.141l-0.111 -0.019l-0.271 0.151l-0.906 0.82l-0.299 -0.112l0.107 0.121l-0.051 0.651l0.277 0.333l0.146 0.589l0.14 0.256l0.048 0.746l0.067 0.058l0.073 -0.339l0.084 0.187l-0.05 0.355l0.085 0.305l-0.205 0.835l0.172 0.026l-0.104 0.347l-0.446 0.48l-1.645 0.61l-0.555 0.383l-0.202 0.36l0.259 0.264l0.106 -0.184l-0.066 0.746l-0.354 1.37l-0.16 0.298l-0.348 0.342l-0.249 0.097l-0.443 0.441l-0.863 1.337l-0.501 0.607l-2.11 1.732l-0.784 0.467l-0.463 0.186l-0.808 0.03l-0.154 0.113l-0.078 0.185l-0.571 -0.061l-0.176 0.195l-0.231 0.006l-0.898 -0.182l-0.43 0.088l-0.714 -0.071l-0.308 0.059l-0.457 0.304l-0.799 -0.006l-0.46 0.096l-0.509 0.323l-0.386 -0.033l-0.337 -0.138l0.033 -0.123l-0.233 -0.142l-0.267 0.014l-0.079 -0.281l-0.252 0.026l-0.038 0.238l-0.11 -0.159l0.002 -0.249l0.111 -0.051l-0.032 -0.171l-0.44 -0.565l-0.142 -0.325l0.114 -0.118l0.16 0.04l0.2 -0.244l-0.114 -0.763l-0.864 -1.297l-0.608 -1.436l-0.258 -0.367l-0.762 -0.676l-0.377 -0.579l-0.209 -0.599l0.006 -0.28l-0.171 -0.19l-0.123 -0.592l-0.008 -0.693l-0.335 -0.831l-0.099 -1.234l0.117 -0.163l-0.057 -0.356l-1.012 -1.532l-0.283 -0.732l-0.71 -1.258l-0.417 -0.456l-0.265 -0.469l-0.054 -0.535l0.098 -0.963l-0.069 -0.672l0.265 -0.318l0.534 -2.076l0.348 -0.41l0.085 -0.252l0.434 -0.256l0.269 -0.396l0.099 -0.311l0.062 -0.759l-0.126 -0.42l-0.389 -0.635l-0.333 -0.951l0.048 -0.126l0.046 -0.022l-0.039 0.107l0.305 -0.32l0.02 -0.317l-0.517 -1.138l-0.039 -0.277l-0.302 -0.365l-0.238 -0.466l0.785 -0.259l-0.207 -0.011l-0.408 0.146l-0.213 -0.193l-0.085 -0.174l0.022 -0.308l-0.356 -0.57l-0.043 -0.189l-1.43 -1.553l-0.626 -0.545l0.28 0.12l0.06 -0.038l-0.437 -0.183l-0.326 -0.464l0.184 0.059l0 -0.067l-0.217 -0.07l-0.23 -0.516l0.283 0.323l0.182 -0.077l-0.205 -0.04l0.051 -0.19l-0.143 0.057l-0.139 -0.084l-0.362 -0.707l0.118 0.117l0.125 -0.019l0.351 -0.338l0.058 -0.695l0.113 0.184l0.329 0.116l0.016 -0.082l0.188 -0.069l-0.224 0.003l-0.231 -0.104l-0.221 -0.256l0.17 -0.113l0.123 0.088l-0.019 -0.477l-0.213 -0.085l0.421 -0.788l0.015 -0.612l0.126 -0.54l-0.072 -0.231l-0.204 -0.228l0.094 -0.086l-0.124 0.012l-0.086 -0.186l0.184 -0.055l-0.1 -0.112l0.049 -0.091l-0.205 -0.01l-0.059 0.144l-0.425 -0.17l-0.082 -0.462l-0.258 -0.117l0.03 0.121l-0.116 0.024l-0.003 -0.226l-0.14 0.006l-0.178 -0.178l0.04 0.366l-0.649 0.033l-0.113 -0.13l-0.071 0.1l-0.176 0.007l-0.207 -0.168l0.078 0.202l-0.232 0.123l-0.155 -0.334l0.092 0.352l-0.227 0.033l-0.053 -0.136l-0.025 0.135l-0.291 0.032l0.007 -0.123l-0.065 0.14l-0.129 0.001l-0.489 -0.356l-0.095 -0.192l-0.11 -0.29l0.093 -0.025l-0.106 -0.041l-0.002 -0.143l0.182 -0.136l-0.164 0.072l-0.187 -0.132l0.258 -0.078l-0.107 -0.011l-0.023 -0.085l-0.154 0.105l-0.061 -0.039l-0.019 -0.125l-0.232 -0.259l-0.43 -0.323l-0.98 -0.078l0.266 -0.171l-0.287 0.073l-0.094 0.128l-1.049 0.069l-0.976 0.181l-0.205 0.096l-0.156 0.241l-0.69 0.053l-1.058 0.53l-0.704 0.189l-0.5 0.276l-0.397 -0.167l-0.847 -0.185l0.227 -0.017l-0.15 -0.072l-0.031 -0.151l-0.148 0.223l-0.772 -0.179l-0.489 0.074l0.572 0.006l-0.863 0.092l-0.382 -0.072l-0.086 0.059l0.306 0.02l-0.852 0.12l-1.631 0.66l-0.714 -0.239l-0.873 -0.465l-1.144 -1.023l-0.51 -0.232l-0.063 -0.155l-0.443 -0.223l-0.441 -0.401l-0.753 -0.297l0.053 -0.159l-0.047 -0.208l-0.218 0.037l-0.153 -0.103l-0.106 -0.326l-0.192 -0.07l-0.124 -0.215l0.012 -0.058l0.176 0.063l0.191 -0.205l-0.288 0.053l-0.025 -0.266l0.148 -0.038l-0.213 -0.106l0.003 -0.184l-0.167 -0.249l-0.132 -0.123l-0.123 0.007l0.001 -0.392l-0.13 0.041l-0.225 -0.254l-0.382 -0.107l-0.183 -0.302l0.016 -0.217l-0.083 0.078l-0.099 -0.243l-0.111 -0.036l-0.125 0.164l-0.082 -0.207l0.039 -0.131l-0.167 0.111l0.005 -0.125l-0.176 -0.061l0.045 -0.161l-0.131 -0.032l0.05 -0.089l0.356 -0.099l-0.157 -0.089l-0.183 0.072l-0.087 -0.163l0.084 -0.094l0.205 0.001l0.133 -0.098l-0.864 0.182l0.022 -0.151l-0.218 0.021l-0.19 -0.135l0.083 -0.185l-0.192 0.033l-0.348 -0.269l0.342 -0.136l-0.155 -0.106l-0.103 0.112l-0.067 -0.025l-0.057 -0.713l0.075 -0.084l0.081 -0.05l0.113 0.172l0.143 0.033l0.228 -0.013l0.027 -0.101l0.731 -0.084l-0.708 0.02l-0.306 0.095l-0.326 -0.552l0.149 -0.136l-0.174 0.037l-0.376 -0.637l-0.178 -0.088l-0.099 0.077l-0.091 -0.103l0.389 -0.167l0.576 -0.812l0.107 -0.868l0.385 -0.944l0.049 -0.342l-0.055 -0.633l-0.128 -0.482l-0.301 -0.359l0.209 -0.151l-0.14 0.04l0.162 -0.314l0.073 -0.441l-0.22 -0.424l-0.1 -0.058l-0.033 0.106l-0.06 -0.03l-0.253 -0.452l-0.122 0.046l-0.05 0.234l-0.051 -0.051l0.168 -1.043l0.138 -0.26l0.279 -0.173l0.155 -0.262l0.189 -0.437l-0.04 -0.066l0.421 -0.695l-0.013 -0.049l-0.179 0.172l0.082 -0.174l0.995 -0.876l0.109 -0.684l0.324 -0.759l0.895 -0.572l0.4 -0.921l0.227 -0.258l0.963 -0.215l0.433 -0.181l0.472 -0.404l0.595 -0.351l0.285 -0.315l0.534 -0.729l0.014 -0.339l-0.222 -0.27l0.066 -0.707l0.134 -0.286l0.328 -0.375l0.101 -0.486l0.733 -0.68l1.612 -0.717l0.548 -0.807l0.428 -1.01l0.647 -0.117l-0.06 0.158l0.085 0.13l0.416 0.334l0.209 0.075l0.298 0.045l0.637 -0.119l0.298 0.068l0.189 -0.027l0.234 -0.168l0.132 0.279l0.927 0.034l0.577 -0.27l0.419 -0.304l0.491 -0.194l0.378 0.029l0.36 -0.329l0.945 -0.358l1.336 -0.081l0.38 -0.183l0.548 -0.011l0.258 -0.101l0.979 -0l0.537 0.248l0.77 -0.216l0.422 -0.222l0.441 0.167l0.31 -0.05l-0.034 -0.123l0.228 0.033l0.478 0.203l0.914 -0.142l0.318 -0.197l0.546 -0.145l0.15 0.031l-0.008 0.174l0.046 -0.119l0.32 0.048l-0.007 0.172l0.145 0.169l-0.041 0.084l0.119 0.049l0.539 -0.327l0.103 -0.014l0.073 0.199l-0.639 0.619l0.103 0.368l0.413 0.253l0.116 0.394l-0.429 0.562l-0.626 0.466l-0.016 0.156l0.256 0.328l0.149 0.066l0.259 -0.027l0.01 0.175l0.175 -0.02l0.06 -0.092l0.299 0.317l-0.054 0.06l0.61 0.155l0.467 0.235l0.474 0.058l0.529 -0.114l0.873 0.205l0.357 0.199l0.664 0.12l0.182 0.231l0.137 0.503l0.21 0.231l0.417 0.162l0.659 0.049l1.048 0.287l1.106 0.638l0.356 0.002l0.298 -0.126l0.423 -0.387l0.128 -0.395l-0.18 -0.36l-0.035 -0.262l0.195 -0.401l0.5 -0.361l0.441 -0.196l0.363 -0.023l0.211 -0.138l0.551 0.019l0.904 0.299l0.015 0.288l0.18 0.117l0.512 0.055l0.332 0.15l0.749 0.025l0.146 0.101l0.2 0.349l0.668 -0.087l0.876 0.151l0.479 0.092l0.72 0.281l0.547 0.047l0.557 0.22l0.357 -0.097l0.501 -0.3l0.293 -0.031l0.172 -0.2l0.529 -0.109l-0.361 0.15l0.439 -0.046l0.081 -0.14l0.441 0.145l0.365 -0.083l0.247 0.2l-0.244 -0.141l-0.121 0.189l0.237 0.072l0.094 0.128l0.18 -0.108l-0.031 -0.094l0.352 0.226l0.527 -0.099l0.064 0.083l0.709 -0.096l0.273 -0.123l0.308 -0.288l0.194 -0.304l0.431 -1.188l0.503 -0.948l0.036 -0.216l0.33 -0.299l-0.09 -0.402l0.014 -0.472l-0.138 -0.151l0.193 -0.426l-0.146 -0.312l0.377 -0.349l-0.008 -0.148l-0.131 -0.104l-0.656 0.336l-0.689 -0.242l-1.009 0.635l-0.9 0.146l-0.417 -0.148l-0.356 -0.351l-0.781 -0.287l-0.597 -0.044l-0.198 0.596l-0.214 -0.037l-0.543 0.15l-0.465 -0.167l-0.254 -0.391l-0.153 0.04l-0.513 -0.137l-0.192 0.166l-0.093 0.012l0.065 -0.117l-0.544 0.067l-0.073 -0.062l0.538 -0.086l0.237 -0.197l-0.979 0.052l0.037 -0.15l0.235 -0.037l-0.015 -0.085l-0.301 -0.14l-0.151 -0.269l0.156 -0.067l0.008 -0.254l-0.941 -0.298l0.125 -0.091l-0.038 -0.256l0.063 -0.017l0.146 0.084l0.087 0.221l0.053 -0.083l0.134 0.046l0.283 -0.079l-0.237 -0.03l-0.143 -0.228l0.25 -0.177l-0.199 -0.074l0.039 -0.155l-0.172 -0.176l0.217 -0.258l-0.786 0.083l0.068 -0.523l0.132 -0.035l0.425 -0.375l0.547 -0.056l0.191 0.136l0.252 -0.009l0.121 -0.053l-0.117 -0.099l0.143 -0.032l0.115 0.024l-0.027 0.119l1.044 -0.02l0.048 -0.034l-0.267 -0.11l0.17 -0.097l0.891 -0.129l-0.484 -0.049l-0.251 -0.129l-0.068 -0.07l0.102 -0.213l2.107 0.113l0.203 -0.212l0.848 -0.41l1.075 -0.288l1.369 0.061l0.256 -0.106l0.149 0.035l-0.033 0.137l0.176 0.162l0.26 0.095l0.494 -0.049l0.127 0.256l0.226 0.152l0.373 -0.088l0.288 0.179l1.315 0.259l1.045 -0.181l0.382 0.123l0.457 0.022l1.149 -0.463l0.288 -0.281l0.061 -0.265l-0.344 -0.768l-1.545 -0.735l-1.157 -0.815l-0.536 -0.132l-0.33 -0.279l-0.356 0.004l-0.29 -0.277l-0.577 -0.179l0.313 -0.139l-0.221 -0.082l0.146 -0.055l0.348 0.155l0.433 -0.105l-0.035 -0.188l0.321 -0.437l0.081 -0.046l0.066 0.113l0.104 -0.16l0.308 0.004l-0.414 -0.303l-0.164 -0.012l-0.147 -0.23l0.734 -0.028l-0.062 -0.149l0.832 -0.231l-0.075 -0.225l-0.528 0.125l-0.116 -0.006l0.21 -0.112l-0.185 0.023l-0.399 0.159l-0.635 0.005l-0.203 0.158l-0.292 0.041l-0.253 0.162l-0.236 -0.049l-0.28 0.104l-0.452 0.035l-0.812 0.518l0.265 -0.173l-0.05 -0.162l-0.166 0.174l-0.214 0.077l0.007 0.203l0.166 0.286l0.435 0.385l0.555 -0.056l0.158 -0.081l0.404 0.059l-0.182 0.329l-0.523 0.06l-0.192 -0.097l-0.205 0.004l-0.385 0.295l-0.371 -0.004l-0.247 0.085l-0.188 0.184l-0.372 0.15l-0.459 -0.166l0.161 -0.354l-0.057 -0.19l-0.636 -0.25l-0.308 0.02l-0.103 -0.076l1.157 -0.543l-0.071 -0.149l-0.164 0.038l-0.228 -0.118l-0.725 0.092l-0.646 -0.198l-0.051 -0.043l0.212 -0.039l0.016 -0.066l-0.453 -0.124l0.806 0.079l0.217 -0.141l-0.224 0.051l-0.31 -0.077l-0.099 -0.142l-0.005 -0.198l-0.181 -0.231l0.154 0.287l-0.04 0.276l-0.341 -0.015l0.031 -0.112l-0.16 0.148l-0.607 0.077l-0.139 0.285l-0.438 0.4l-0.591 0.145l-0.027 0.122l0.126 0.257l-0.169 0.5l-0.51 0.085l0.047 -0.217l-0.164 0.009l-0.124 0.401l0.081 -0.01l-0.243 0.279l-0.083 0.795l-0.097 0.112l-0.331 -0.007l-0.205 0.21l-0.04 0.436l-0.404 0.282l0.223 0.118l0.275 0.303l0.004 0.192l0.211 0.301l0.859 0.324l-0.101 0.222l-0.176 0.034l-0.608 -0.107l-0.247 0.09l-0.426 0.018l-0.241 0.286l-0.486 0.189l-0.569 0.423l0.051 -0.24l0.538 -0.312l-0.687 0.016l-0.094 -0.158l-0.155 -0.075l-0.752 -0.151l-0.311 0.137l-0.316 -0.09l-0.395 0.224l-0.319 -0.024l0.104 0.329l0.346 0.091l0.13 0.18l-0.43 -0.211l-0.185 0.029l0.239 0.215l-0.02 0.149l-0.282 -0.258l-0.239 -0.04l0.007 0.149l0.241 0.156l-0.047 0.035l-0.231 -0.066l-0.084 -0.226l-0.416 -0.184l-0.045 -0.091l0.071 -0.1l-0.293 0.095l-0.037 0.459l0.736 0.862l-0.173 0.074l0.007 -0.157l-0.241 -0.048l-0.082 0.047l0.047 0.089l0.08 0.139l0.101 -0.007l-0.498 0.171l0.684 0.206l0.431 0.309l0.283 0.077l0.058 0.135l-0.005 0.462l-0.518 -0.357l-0.466 0.157l0.111 0.083l0.051 0.175l0.198 0.04l0.093 0.14l-0.327 0.106l-0.147 -0.148l-0.24 -0.103l-0.05 0.043l0.335 0.688l-0.019 0.209l0.119 0.197l-0.443 -0.346l-0.109 0.014l-0.119 0.333l-0.061 -0.029l-0.052 -0.226l-0.296 -0.327l-0.124 0.039l-0.064 0.253l-0.309 -0.344l0.096 -0.306l-0.554 -0.505l0.279 -0.305l0.254 0.022l0.167 -0.153l1.095 0.37l-0.027 -0.093l0.229 -0.022l0.027 -0.103l-0.315 -0.059l-0.412 -0.204l-0.102 0.082l-0.355 -0.055l-0.492 0.091l-0.142 -0.166l-0.028 0.113l-0.12 0.028l-0.414 -0.528l0.124 -0.067l0.219 0.045l0.006 -0.134l-0.338 0.021l-0.479 -0.318l-0.3 -0.382l-0.149 -0.335l-0.454 -0.241l-0.076 -0.122l0.137 0.002l-0.122 -0.259l0.124 -0.269l-0.02 -0.492l0.135 -0.215l0.002 -0.148l-0.392 -0.161l-0.292 -0.3l-0.261 -0.129l0.013 -0.065l-0.129 0.01l-0.693 -0.364l-0.779 -0.218l0.175 -0.011l0.504 0.175l-0.821 -0.541l-0.509 -0.151l-0.408 0.023l-0.044 -0.137l-0.756 -0.515l-0.063 -0.085l0.348 -0.015l-0.49 -0.331l-0.086 -0.104l-0.04 -0.374l-0.305 -0.217l-0.237 -0.04l-0.347 0.502l-0.105 -0.001l-0.232 -0.271l-0.112 -0.374l0.266 -0.145l-0.155 -0.144l-0.163 0.061l-0.259 -0.061l-0.176 0.133l-0.756 0.192l-0.048 0.204l0.297 0.274l-0.139 0.17l-0.105 -0.034l-0.031 0.109l0.148 0.499l0.295 0.229l0.873 0.424l0.446 0.881l0.531 0.446l0.628 0.31l0.996 0.038l-0.014 0.138l-0.237 0.137l-0.014 0.109l2.055 0.857l0.506 0.434l0.025 0.116l-0.142 0.284l-0.266 -0.116l-0.213 -0.343l-0.469 -0.06l-0.216 -0.163l-0.252 0.045l-0.258 0.321l-0.148 0.389l0.076 0.109l0.517 0.258l0.06 0.383l-0.558 0.198l-0.071 0.391l-0.264 0.159l-0.225 0.308l-0.332 0.003l-0.079 -0.095l-0.003 -0.141l0.179 -0.128l0.083 -0.18l-0.026 -0.131l0.093 -0.099l0.225 -0.046l0.013 -0.182l-0.103 -0.083l-0.083 -0.33l-0.331 -0.636l-0.398 -0.08l-0.344 -0.169l-0.003 -0.23l-0.182 -0.199l-0.426 0.069l0.121 -0.13l-0.152 -0.084l-0.265 0.001l-0.311 -0.424l-0.644 -0.008l-0.458 -0.226l-0.824 -0.612l-0.17 -0.206l-0.341 -0.135l-0.155 0.033l0.027 -0.145l-0.46 -0.401l-0.193 -0.032l0.006 -0.236l-0.2 -0.309l-0.133 -0.435l-0.899 -0.371l-0.523 -0.103l-0.214 0.076l-0.547 0.469l-0.743 0.181l-0.545 0.322l-0.147 0.175l-0.454 0.127l-0.709 -0.157l-0.087 -0.116l-0.247 -0.022l-0.013 -0.078l-0.348 0.072l-0.488 -0.107l-0.171 -0.113l-0.794 0.4l-0.216 0.355l0.048 0.247l0.216 0.302l-0.141 0.033l-0.016 0.094l0.098 0.218l-1.165 0.657l-1.05 0.225l-0.318 0.239l0.176 0.101l-0.295 0.107l-0.923 1.095l0.122 0.457l0.407 0.304l-0.723 0.442l-0.294 0.547l0.093 0.139l-0.606 0.07l-0.313 0.174l-0.471 0.61l-0.341 -0.054l-0.335 0.116l-1.579 -0.003l-0.307 0.212l-0.497 0.082l-0.19 0.289l-0.264 0.109l-0.416 -0.162l-0.228 -0.409l-0.115 -0.04l-0.028 -0.092l0.195 -0.185l-0.179 0.082l-0.489 -0.362l0.021 -0.085l-0.111 0.081l-0.519 0.03l-0.34 0.162l-0.764 -0.115l-0.4 0.089l0.184 -0.399l0.022 -0.302l-0.087 -0.226l0.077 -0.225l-0.079 -0.263l0.213 0.023l-0.131 -0.094l-0.414 0.07l-0.037 -0.209l0.229 -0.09l0.083 -0.251l0.146 -0.08l-0.162 0.062l-0.182 0.273l-0.221 0.045l-0.123 -0.101l0.105 -0.539l0.227 -0.205l0.31 -0.573l-0.035 -0.143l0.188 -0.494l0.025 -0.333l-0.146 -0.474l0.051 -0.138l-0.133 -0.067l0.111 -0.176l-0.101 -0.006l-0.009 -0.158l0.196 -0.169l-0.125 -0.011l0.086 -0.127l-0.082 -0.058l0 -0.17l-0.221 0.046l0.106 -0.205l-0.308 -0.178l0.057 -0.197l0.304 -0.16l0.519 -0.063l0.106 -0.042l-0.008 -0.141l0.559 -0.185l0.637 0.211l1.214 -0.091l1.324 0.229l0.918 -0.103l0.559 0.147l0.171 -0.082l0.538 0.126l0.346 -0.017l0.36 -0.093l0.146 -0.126l0.239 -0.996l0.169 -0.13l-0.076 -0.074l-0.092 0.097l0.164 -0.865l0.255 0.151l0.135 0.288l0.143 0.092l-0.243 -0.467l-0.405 -0.246l-0.014 -0.057l0.178 0.03l-0.114 -0.57l-0.641 -0.204l-0.305 -0.35l0.073 -0.173l-0.178 -0.125l0.048 -0.061l0.121 -0.05l0.285 0.058l-0.232 -0.095l-0.528 -0.001l-0.027 -0.07l0.102 -0.089l-0.342 -0.043l-0.017 -0.112l-0.177 0.025l-0.937 -0.237l-0.411 0.015l-0.116 -0.146l-0.251 -0.071l0.35 -0.13l-0.248 -0.12l0.336 -0.014l-0.478 -0.059l-0.002 -0.177l1.49 -0.301l0.228 0.05l0.311 0.254l0.246 -0.111l0.367 0.003l0.075 0.063l0.098 -0.115l0.081 0.066l0.449 -0.022l-0.189 -0.153l-0.018 -0.396l-0.23 -0.288l-0.043 -0.194l0.597 0.004l0.12 0.292l0.976 0.091l0.58 -0.151l-0.288 -0.06l0.058 -0.195l1.22 -0.386l0.186 -0.163l-0.014 -0.487l0.189 -0.197l0.678 -0.131l0.98 -0.327l0.8 0.008l-0.639 -0.068l-0.138 -0.087l0.295 -0.055l0.53 0.124l-0.269 -0.124l0.178 -0.014l-0.236 -0.201l0.079 -0.117l0.457 -0.381l0.286 -0.632l0.292 -0.02l0.471 -0.308l0.53 -0.138l0.754 -0.034l0.381 0.159l-0.144 -0.094l0.153 -0.279l0.423 -0.042l0.38 0.006l0.158 0.148l-0.059 0.075l0.093 0.036l0.133 -0.174l0.159 0.092l0.002 0.12l0.033 -0.387l0.091 -0.094l0.587 0.019l0.379 0.256l0.199 0.045l-0.472 -0.304l-0.334 -0.067l-0.074 -0.074l0.003 -0.261l-0.262 -0.034l0.003 -0.103l0.304 -0.07l0.005 -0.07l-0.275 -0.254l-0.109 -0.342l0.097 -0.022l-0.054 -0.262l-0.484 -0.182l0.07 -0.382l-0.081 -0.158l0.043 -0.467l0.508 0.111l0.216 -0.239l0.179 -0.059l0.129 0.092l0.059 -0.31l-0.145 -0.032l-0.117 0.028l-0.221 0.291l-0.304 0.06l-0.2 -0.089l0.016 -0.098l0.335 -0.259l0.815 -0.063l0.528 -0.407l0.648 -0.156l-0.165 0.175l0.092 0.113l-0.013 0.206l-0.228 0.244l-0.013 0.378l0.207 0.1l0.356 -0.001l0.08 0.079l-0.173 0.201l-0.214 0.042l-0.112 -0.076l-0.108 0.063l-0.136 0.348l-0.279 0.022l0.12 0.082l-0.433 0.268l0.08 0.227l-0.217 0.226l0.234 0.04l0.058 0.193l0.276 0.133l0.007 0.093l-0.16 0.109l0.274 -0.016l0.069 0.079l0.148 -0.029l0.372 0.122l0.281 -0.063l0.051 0.098l-0.253 0.206l0.044 0.065l0.545 0.065l0.396 -0.2l0.315 -0.023l0.464 -0.299l0.454 0.056l0.419 0.27l0.276 -0.012l0.226 0.352l0.633 0.162l-0.025 -0.184l-0.632 -0.056l-0.098 -0.248l0.556 0.202l1.802 -0.365l0.374 -0.264l0.702 -0.176l0.824 -0.106l0.237 -0.002l0.436 0.153l0.041 0.052l-0.364 -0.112l0.234 0.314l0.166 0.061l0.571 -0.016l0.452 -0.248l0.116 -0.287l0.422 -0.03l0.282 -0.152l0.335 -0.299l0.101 -0.215l-0.083 0.267l-0.437 0.368l0.594 0.047l0.049 -0.52l-0.176 -0.358l-0.031 -0.824l0.04 -0.187l0.28 -0.194l0.108 -0.304l0.27 -0.249l0.826 -0.153l0.094 0.129l0.488 0.271l0.15 0.234l0.361 0.119l0.283 -0.037l0.452 -0.242l-0.081 -0.534l0.227 -0.57l-0.192 -0.027l-0.222 0.115l-0.347 -0.095l-0.259 -0.298l0.172 -0.128l-0.177 -0.003l-0.072 -0.131l0.083 -0.078l-0.021 -0.197l0.589 -0.096l-0.029 -0.08l0.326 -0.101l1.064 -0.048l0.065 -0.118l2.384 0.225l0.171 -0.14l-0.006 -0.228l0.277 0.089l0.183 -0.157l0.429 0.021l0.2 -0.171l0.976 0.126l0.05 -0.083l-0.452 -0.238l-0.652 0.004l-0.426 -0.184l-0.151 -0.165l0.13 0.048l0.029 -0.119l-0.138 -0.066l-1.051 0.212l-0.257 -0.078l-0.67 0.13l0.034 -0.212l-0.191 0.201l-0.422 -0.05l0.08 0.132l-0.278 0.074l-0.102 -0.065l-1.056 0.219l-0.154 0.093l-0.982 0.035l-0.443 0.17l-0.057 -0.01l0.234 -0.196l-0.286 -0.188l-0.162 0.153l-0.287 0.028l-0.02 -0.128l0.147 -0.071l-0.078 -0.053l0.073 -0.1l-0.731 -0.124l-0.049 -0.089l-0.192 0.063l-0.177 -0.065l-0.075 -0.371l0.152 -0.314l-0.006 -0.203l0.058 -0l-0.067 -0.068l0.108 -0.04l-0.35 -0.398l0.087 -0.287l-0.177 -0.137l-0.062 -0.209l0.37 -0.41l0.177 -0.006l-0.106 -0.165l0.775 -0.106l-0.077 -0.128l0.103 -0.004l-0.027 -0.062l0.079 0.013l0.134 -0.157l1.067 -0.393l0.679 -0.474l0.28 -0.286l0.384 -0.083l0.346 0.024l-0.06 -0.091l0.145 -0.058l-0.117 -0.134l0.092 -0.336l-0.673 -0.192l-0.093 -0.086l0.046 -0.102l-0.224 0.079l-0.713 -0.049l-0.589 0.094l-0.355 -0.136l-0.208 0.077l-0.138 -0.068l-0.147 0.264l-0.168 -0.013l0.062 0.058l-0.228 0.021l-0.04 0.108l-0.314 0.016l-0.043 0.049l0.086 0.098l-0.199 -0.056l0.164 0.191l-0.436 0.317l0.382 0.346l-0.502 0.285l-0.255 0.31l-0.849 0.257l-0.192 0.148l-0.368 -0.014l-0.32 0.239l-0.428 0.06l-0.075 0.114l-0.218 0.068l0.189 0.007l-0.039 0.093l-0.293 0.107l-0.29 -0.084l0.094 0.152l-0.071 0.062l0.134 0.058l-0.391 0.15l-0.268 -0.012l0.051 0.128l0.205 0.102l-0.124 0.067l-0.135 0.3l0.09 0.182l-0.269 -0.041l-0.065 0.149l0.12 0.875l0.342 0.073l0.068 0.093l0.295 -0.055l0.207 0.182l0.395 0.154l-0.023 0.101l0.252 0.074l0.203 0.251l-0.019 0.071z";
+
+/* ═══════════════════════════════════════════════════════════
+   Partner map — equirectangular, drawn from inlined coastline
+   data (Natural Earth, simplified). No tiles, so it works
+   offline and inside a sandboxed page.
+
+   Land path units are degrees: x = longitude, y = −latitude.
+   ═══════════════════════════════════════════════════════════ */
+const MAP_VIEWS = [
+  { key:'ph',     label:'Philippines',        b:[116.5,4.5,127,19.5] },
+  { key:'luzon',  label:'Luzon',              b:[119.5,12,124.5,19] },
+  { key:'vismin', label:'Visayas & Mindanao', b:[121.5,5,127,12.5] }
+];
+const mapPartners = () => resellers.filter(r => r.market === 'Philippines');
+let mapView = 'ph', mapAnim = null;
+let viewBox = null;                       // current [x0,y0,x1,y1], degrees, y = −lat
+let mapBounds = null;                     // the requested box, before aspect fitting
+
+/* Grow a box to the container's aspect ratio so HTML pins land
+   exactly where the SVG draws — no letterboxing to correct for. */
+function fitBox(b, aspect){
+  let [x0,y0,x1,y1] = b;                  // note: y here is −lat, so y0 = −latMax
+  const w = x1-x0, h = y1-y0, have = w/h;
+  if (have < aspect){ const need = h*aspect, pad = (need-w)/2; x0-=pad; x1+=pad; }
+  else { const need = w/aspect, pad = (need-h)/2; y0-=pad; y1+=pad; }
+  return [x0,y0,x1,y1];
+}
+const boxOf = v => { const [a,b,c,d] = MAP_VIEWS.find(x => x.key===v).b; return [a,-d,c,-b]; };
+
+function drawGraticule(){
+  const g = document.getElementById('mapGrat');
+  let d = '';
+  for (let lon = -180; lon <= 180; lon += 20) d += `M${lon},-90L${lon},90`;
+  for (let lat = -80; lat <= 80; lat += 20) d += `M-180,${lat}L180,${lat}`;
+  g.innerHTML = `<path class="map-grat" d="${d}"></path>`;
+}
+
+function applyBox(box){
+  if (!box.every(Number.isFinite)) return;   // panel not laid out yet
+  viewBox = box;
+  const [x0,y0,x1,y1] = box;
+  document.getElementById('mapSvg').setAttribute('viewBox', `${x0} ${y0} ${x1-x0} ${y1-y0}`);
+  placePins();
+}
+
+function tweenTo(target){
+  cancelAnimationFrame(mapAnim);
+  const from = viewBox ? viewBox.slice() : target.slice();
+  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if (reduce){ applyBox(target); return; }
+  const t0 = performance.now(), ms = 420;
+  const step = now => {
+    const k = Math.min(1, (now - t0)/ms), e = 1 - Math.pow(1-k, 3);
+    applyBox(from.map((v,i) => v + (target[i]-v)*e));
+    if (k < 1) mapAnim = requestAnimationFrame(step);
+  };
+  mapAnim = requestAnimationFrame(step);
+}
+
+/* Partners → screen positions, with nearby ones merged into a
+   cluster pin (Metro Manila collapses to one at world scale). */
+function clusterPins(){
+  const wrap = document.getElementById('mapWrap');
+  const W = wrap.clientWidth, H = wrap.querySelector('.map-svg').clientHeight;
+  const [x0,y0,x1,y1] = viewBox;
+  const px = r => ({ x:(r.lon - x0)/(x1-x0)*W, y:(-r.lat - y0)/(y1-y0)*H, r });
+  const pts = mapPartners().map(px);
+  const groups = [];
+  pts.forEach(p => {
+    const near = groups.find(g => Math.hypot(g.x - p.x, g.y - p.y) < 34);
+    if (near){ near.items.push(p.r); near.x = (near.x*(near.items.length-1) + p.x)/near.items.length;
+               near.y = (near.y*(near.items.length-1) + p.y)/near.items.length; }
+    else groups.push({ x:p.x, y:p.y, items:[p.r] });
+  });
+  return { groups, W, H };
+}
+
+function placePins(){
+  const wrap = document.getElementById('mapWrap');
+  if (!wrap.clientWidth || !wrap.querySelector('.map-svg').clientHeight) return;
+  const { groups, W, H } = clusterPins();
+  wrap.querySelectorAll('.pin').forEach(el => el.remove());
+  closePinList();
+  const maxRev = Math.max(...mapPartners().map(r => r.rev[period]));
+  const colour = { 'Active':'--ok', 'Low stock':'--warn', 'Review':'--crit', 'Renewal due':'--gold' };
+  const showLabels = groups.length <= 6 && W > 520;
+
+  groups.forEach(g => {
+    const btn = document.createElement('button');
+    btn.className = 'pin' + (g.items.length > 1 ? ' pin-cluster' : '') + (g.x > W*0.72 ? ' left' : '');
+    btn.dataset.names = g.items.map(r => r.name).join('|');
+    btn.style.left = (g.x / W * 100) + '%';
+    btn.style.top  = (g.y / H * 100) + '%';
+
+    if (g.items.length > 1){
+      const rev = sum(g.items.map(r => r.rev[period]));
+      btn.innerHTML = `<span class="pin-dot" style="width:26px;height:26px">${g.items.length}</span>` +
+        (showLabels ? `<span class="pin-label"><b>${esc(g.items.length)} partners</b><span>${esc(pesoCompact(rev))}</span></span>` : '');
+      btn.setAttribute('aria-label',
+        g.items.length + ' partners here: ' + g.items.map(r => r.name).join(', ') + '. Zoom in.');
+      btn.addEventListener('click', e => { e.stopPropagation(); openPinList(g, btn); });
+    } else {
+      const r = g.items[0];
+      const size = 9 + Math.round(r.rev[period] / maxRev * 9);
+      btn.style.color = `var(${colour[r.status] || '--gold'})`;
+      btn.innerHTML = `<span class="pin-dot" style="width:${size}px;height:${size}px;background:currentColor"></span>` +
+        (showLabels ? `<span class="pin-label"><b>${esc(r.name)}</b><span>${esc(pesoCompact(r.rev[period]))}</span></span>` : '');
+      btn.setAttribute('aria-label',
+        `${r.name}, ${r.region}. ${peso(r.rev[period])} this period, status ${r.status}. Open partner file.`);
+      btn.addEventListener('click', () => openDrawer(r.name));
+    }
+    wrap.appendChild(btn);
+  });
+}
+
+/* Partners in one city sit a few km apart — closer than this basemap
+   resolves — so a cluster opens a list instead of zooming into a blank. */
+function closePinList(){ document.querySelectorAll('.pin-pop').forEach(el => el.remove()); }
+
+function openPinList(group, anchor){
+  closePinList();
+  const pop = document.createElement('div');
+  pop.className = 'pin-pop';
+  pop.style.left = anchor.style.left;
+  pop.style.top  = anchor.style.top;
+  const where = group.items[0].region.split(', ').pop();
+  pop.innerHTML = `<h5>${esc(group.items.length)} partners · ${esc(where)}</h5>` +
+    group.items.slice().sort((a,b) => b.rev[period] - a.rev[period]).map(r =>
+      `<button data-partner="${esc(r.name)}">
+         <span class="pp-name">${esc(r.name)}</span>
+         <span class="pp-rev">${esc(peso(r.rev[period]))}</span>
+       </button>`).join('');
+  pop.addEventListener('click', e => {
+    const b = e.target.closest('[data-partner]'); if (!b) return;
+    closePinList(); openDrawer(b.dataset.partner);
+  });
+  document.getElementById('mapWrap').appendChild(pop);
+  pop.querySelector('button').focus();
+}
+document.addEventListener('click', e => { if (!e.target.closest('.pin-pop,.pin')) closePinList(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closePinList(); });
+
+const aspect = () => {
+  const svg = document.querySelector('#mapWrap .map-svg');
+  const w = svg.clientWidth, h = svg.clientHeight;
+  return (w && h) ? w / h : 16/9;         // hidden panel: assume the CSS ratio
+};
+
+function goTo(b){ mapBounds = b; tweenTo(fitBox(b, aspect())); }
+
+function renderMapControls(){
+  document.getElementById('mapControls').innerHTML = MAP_VIEWS.map(v =>
+    `<button class="chip${v.key === mapView ? ' on' : ''}" data-map="${esc(v.key)}">${esc(v.label)}</button>`).join('');
+}
+
+function renderMap(){
+  const land = document.getElementById('mapLand');
+  if (!land.getAttribute('d')){ land.setAttribute('d', MAP_LAND); drawGraticule(); }
+  const here = mapPartners(), away = resellers.length - here.length;
+  document.getElementById('mapNote').textContent =
+    here.length + ' of ' + resellers.length + ' partners trade in the Philippines';
+  document.getElementById('mapSummary').textContent =
+    peso(sum(here.map(r => r.rev[period]))) + ' of Philippine sell-in this period' +
+    (away ? ' · ' + away + ' partners outside the country are on the Partners tab' : '');
+  const rank = here.slice().sort((a,b) => b.rev[period] - a.rev[period]);
+  document.getElementById('mapSide').innerHTML = rank.map(r => `
+    <button class="side-row" data-partner="${esc(r.name)}">
+      <span>
+        <span class="sr-name">${esc(r.name)}</span>
+        <span class="sr-city">${esc(r.region.split(',')[0])} · ${r.doors} ${r.doors === 1 ? 'door' : 'doors'}</span>
+        <span class="sr-status" style="color:var(${{'Active':'--ok','Low stock':'--warn','Review':'--crit'}[r.status] || '--gold'})">${esc(r.status)}</span>
+      </span>
+      <span class="sr-rev">${esc(peso(r.rev[period]))}</span>
+    </button>`).join('');
+
+  renderMapControls();
+  mapBounds = boxOf(mapView || 'ph');
+  applyBox(fitBox(mapBounds, aspect()));
+  // If the tab was still hidden, re-fit once it has been laid out.
+  if (!document.getElementById('mapWrap').clientWidth)
+    requestAnimationFrame(() => applyBox(fitBox(mapBounds, aspect())));
+}
+
+const mapSide = document.getElementById('mapSide');
+mapSide.addEventListener('click', e => {
+  const b = e.target.closest('[data-partner]'); if (b) openDrawer(b.dataset.partner);
+});
+/* Hovering a row lights up its pin, so the list and the map read as one thing. */
+const hilite = (name, on) => document.querySelectorAll('#mapWrap .pin').forEach(pin => {
+  if ((pin.dataset.names || '').split('|').includes(name)) pin.classList.toggle('hot', on);
+});
+mapSide.addEventListener('mouseover', e => {
+  const b = e.target.closest('[data-partner]'); if (b) hilite(b.dataset.partner, true);
+});
+mapSide.addEventListener('mouseout', e => {
+  const b = e.target.closest('[data-partner]'); if (b) hilite(b.dataset.partner, false);
+});
+
+document.getElementById('mapControls').addEventListener('click', e => {
+  const b = e.target.closest('[data-map]'); if (!b) return;
+  mapView = b.dataset.map; renderMapControls();
+  goTo(boxOf(mapView));
+});
+
+/* Keep pins glued to the coastline when the panel resizes. */
+if (window.ResizeObserver){
+  new ResizeObserver(() => {
+    if (mapBounds && session && session.role === 'admin' && document.getElementById('mapWrap').clientWidth){
+      applyBox(fitBox(mapBounds, aspect()));
+    }
+  }).observe(document.getElementById('mapWrap'));
+}
+
+
+/* ═══════════════════════════════════════════════════════════
+   Adding a partner.
+
+   New partners are kept in this browser (localStorage) and merged
+   into the list at load, so nothing is lost on refresh. They are
+   local to this machine — a real portal writes them to the server,
+   which is also what gives every partner a login of their own.
+   ═══════════════════════════════════════════════════════════ */
+const PH_CITIES = [
+  ['Makati','Makati, Metro Manila',14.55,121.02],
+  ['Taguig (BGC)','BGC, Taguig',14.55,121.05],
+  ['Quezon City','Quezon City, Metro Manila',14.68,121.05],
+  ['Manila','Manila, Metro Manila',14.60,120.98],
+  ['Pasig','Pasig, Metro Manila',14.58,121.06],
+  ['Muntinlupa (Alabang)','Alabang, Muntinlupa',14.42,121.04],
+  ['Cebu City','Cebu City, Cebu',10.32,123.89],
+  ['Mandaue','Mandaue, Cebu',10.33,123.94],
+  ['Iloilo City','Iloilo City, Iloilo',10.72,122.56],
+  ['Bacolod','Bacolod, Negros Occidental',10.68,122.95],
+  ['Tagbilaran','Tagbilaran, Bohol',9.65,123.85],
+  ['Dumaguete','Dumaguete, Negros Oriental',9.31,123.30],
+  ['Tacloban','Tacloban, Leyte',11.24,125.00],
+  ['Davao City','Davao City, Davao del Sur',7.07,125.61],
+  ['Cagayan de Oro','Cagayan de Oro, Misamis Oriental',8.48,124.65],
+  ['General Santos','General Santos, South Cotabato',6.11,125.17],
+  ['Zamboanga City','Zamboanga City, Zamboanga del Sur',6.91,122.08],
+  ['Butuan','Butuan, Agusan del Norte',8.95,125.54],
+  ['Baguio','Baguio, Benguet',16.41,120.59],
+  ['Angeles (Clark)','Angeles, Pampanga',15.15,120.59],
+  ['San Fernando','San Fernando, Pampanga',15.03,120.69],
+  ['Olongapo','Olongapo, Zambales',14.83,120.28],
+  ['Batangas City','Batangas City, Batangas',13.76,121.06],
+  ['Lipa','Lipa, Batangas',13.94,121.16],
+  ['Naga','Naga, Camarines Sur',13.62,123.19],
+  ['Legazpi','Legazpi, Albay',13.14,123.74],
+  ['Puerto Princesa','Puerto Princesa, Palawan',9.74,118.74]
+];
+
+const LOCAL_KEY = 'vermonix-partners';
+function loadLocalPartners(){
+  try {
+    const raw = JSON.parse(localStorage.getItem(LOCAL_KEY) || '[]');
+    return Array.isArray(raw) ? raw.filter(r => r && r.name && r.phone) : [];
+  } catch { return []; }
+}
+function saveLocalPartners(){
+  try { localStorage.setItem(LOCAL_KEY, JSON.stringify(resellers.filter(r => r.local))); }
+  catch { toast('This browser is blocking local storage — the partner will be lost on refresh'); }
+}
+
+/* Their opening mix, until real sell-out data is imported: the house
+   mix, weighted to what they have bought. */
+function estimateTop(revMtd){
+  const mix = fragrances.slice().sort((a,b) => b.rev.mtd - a.rev.mtd).slice(0,3);
+  const share = sum(mix.map(f => f.rev.mtd));
+  return mix.map(f => [f.name, Math.max(1, Math.round(revMtd * (f.rev.mtd/share) / f.srp))]);
+}
+
+const $ = id => document.getElementById(id);
+
+function openAddPartner(){
+  const sel = $('ap-city');
+  sel.innerHTML = PH_CITIES.map((c,i) => `<option value="${i}">${esc(c[0])}</option>`).join('')
+    + '<option value="other">Other city…</option>';
+  sel.value = '13';                                   // Davao City
+  syncCity();
+  $('ap-mtd').value = 180000; syncDerived();
+  $('addError').textContent = '';
+  $('addScrim').hidden = false; $('addModal').hidden = false;
+  $('ap-name').focus();
+}
+function closeAddPartner(){
+  $('addScrim').hidden = true; $('addModal').hidden = true;
+  $('addForm').reset();
+}
+function syncCity(){
+  const v = $('ap-city').value, other = v === 'other';
+  $('ap-coords').hidden = !other; $('ap-coords2').hidden = !other;
+  if (!other){
+    const c = PH_CITIES[+v];
+    $('ap-region').value = c[1]; $('ap-lat').value = c[2]; $('ap-lon').value = c[3];
+  } else { $('ap-region').value = ''; $('ap-lat').value = ''; $('ap-lon').value = ''; }
+}
+/* Quarter and year default to the same shape as the rest of the book. */
+function syncDerived(){
+  const mtd = +$('ap-mtd').value || 0;
+  const q = sum(resellers.map(r => r.rev.qtd)) / sum(resellers.map(r => r.rev.mtd));
+  const y = sum(resellers.map(r => r.rev.ytd)) / sum(resellers.map(r => r.rev.mtd));
+  $('ap-qtd').value = Math.round(mtd * q / 1000) * 1000;
+  $('ap-ytd').value = Math.round(mtd * y / 1000) * 1000;
+}
+
+function submitPartner(e){
+  e.preventDefault();
+  const err = $('addError'), fail = m => { err.textContent = m; return false; };
+  const name = $('ap-name').value.trim();
+  const phone = normalisePhone($('ap-phone').value);
+  const lat = parseFloat($('ap-lat').value), lon = parseFloat($('ap-lon').value);
+  const mtd = +$('ap-mtd').value, qtd = +$('ap-qtd').value, ytd = +$('ap-ytd').value;
+
+  if (!name) return fail('Give the partner a trading name.');
+  if (resellers.some(r => r.name.toLowerCase() === name.toLowerCase()))
+    return fail('There is already a partner called ' + name + '.');
+  if (phone.length !== 10 || !phone.startsWith('9'))
+    return fail('The mobile number needs 10 digits starting with 9, for example 917 123 4567.');
+  if (resellers.some(r => r.phone === phone))
+    return fail('Another partner already has that mobile number.');
+  if (!Number.isFinite(lat) || !Number.isFinite(lon))
+    return fail('Pick a city, or give the latitude and longitude for the pin.');
+  if (!(mtd > 0 && qtd >= mtd && ytd >= qtd))
+    return fail('Sell-in figures must rise from month to quarter to year.');
+
+  const r = {
+    local: true,
+    name, region: $('ap-region').value.trim() || 'Philippines',
+    tier: $('ap-tier').value, status: $('ap-status').value, compliance: 'Clear',
+    sellThrough: +$('ap-sell').value, stock: +$('ap-stock').value,
+    rev: { mtd, qtd, ytd },
+    since: +$('ap-since').value, renewal: $('ap-renewal').value.trim(),
+    doors: +$('ap-doors').value, margin: (+$('ap-margin').value) / 100,
+    terms: $('ap-terms').value,
+    contact: $('ap-contact').value.trim() + ' · ' + $('ap-role').value.trim(),
+    email: $('ap-email').value.trim() || (phone + '@partner.ph'),
+    phone, market: 'Philippines', lat, lon,
+    top: estimateTop(mtd)
+  };
+
+  resellers.push(r);
+  saveLocalPartners();
+  closeAddPartner();
+  fillViewAs();
+  renderAll();
+  toast(name + ' added — they can sign in with ' + prettyPhone(phone));
+}
+
+function removePartner(name){
+  const i = resellers.findIndex(r => r.name === name);
+  if (i < 0 || !resellers[i].local) return;
+  resellers.splice(i,1);
+  saveLocalPartners();
+  closeDrawer();
+  if (viewingPartner === name) { setView(null); return toast(name + ' removed'); }
+  fillViewAs();
+  renderAll();
+  toast(name + ' removed');
+}
+
+$('addPartner').addEventListener('click', openAddPartner);
+$('addClose').addEventListener('click', closeAddPartner);
+$('addCancel').addEventListener('click', closeAddPartner);
+$('addScrim').addEventListener('click', closeAddPartner);
+$('ap-city').addEventListener('change', syncCity);
+$('ap-mtd').addEventListener('input', syncDerived);
+$('ap-phone').addEventListener('input', e => {
+  const d = normalisePhone(e.target.value).slice(0,10);
+  e.target.value = [d.slice(0,3), d.slice(3,6), d.slice(6)].filter(Boolean).join(' ');
+});
+$('addForm').addEventListener('submit', submitPartner);
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape' && !$('addModal').hidden) closeAddPartner();
+});
+
+/* ═══════════════════════════════════════════════════════════
+   Render + wiring
+   ═══════════════════════════════════════════════════════════ */
+function renderAll(){
+  renderLedger();
+  if (session.role === 'admin'){
+    renderMap(); renderFragrances(); renderChips(); renderResellers();
+    renderInventory(); renderCompliance();
+  } else {
+    renderMine(); renderStatement(); renderMyCases();
+  }
+  buildCharts();
+}
+
+function showView(name){
+  document.querySelectorAll('.tab').forEach(b => b.classList.toggle('on', b.dataset.view === name));
+  document.querySelectorAll('.view').forEach(v => v.classList.toggle('on', v.id === 'view-' + name));
+}
+
+/* Signing in as a different role must not leave the previous role's
+   rendered rows or pins in the document, even hidden. */
+function clearRoleDom(){
+  document.querySelectorAll('#mapWrap .pin, #mapWrap .pin-pop').forEach(el => el.remove());
+  ['ledger','fragList','resellerBody','invBody','caseList',
+   'mineList','mineFacts','stateBody','stateFoot','myCaseList'].forEach(id => {
+     const el = document.getElementById(id); if (el) el.innerHTML = '';
+   });
+}
+
+/* ═══════════════════════════════════════════════════════════
+   Access
+
+   The desk is open: anyone with the link sees the company view
+   and can look at any partner's dashboard. A code unlocks the
+   admin extras — compliance cases, adding and removing partners.
+
+   That code is checked in the page, so treat it as a latch, not
+   a lock: it keeps the tab tidy, it does not protect anything.
+   Real protection needs a server, and so does real partner data.
+   ═══════════════════════════════════════════════════════════ */
+const ADMIN_HASH = 2781835266;
+const hashCode = v => {
+  let h = 2166136261;
+  for (const ch of String(v).trim().toUpperCase()){
+    h ^= ch.charCodeAt(0); h = Math.imul(h, 16777619) >>> 0;
+  }
+  return h;
+};
+
+let isAdmin = false;
+try { isAdmin = localStorage.getItem('vermonix-admin') === '1'; } catch {}
+
+/* The rest of the page reasons about a session, so keep giving it
+   one: the company view is the wholesale desk, and picking a
+   partner switches to that partner's own dashboard. */
+let session = { role:'admin', name:'Wholesale desk' };
+let viewingPartner = null;
+
+function setView(partnerName){
+  viewingPartner = partnerName;
+  session = partnerName
+    ? { role:'reseller', partner:partnerName, name:(resellers.find(r => r.name === partnerName)||{}).contact }
+    : { role:'admin', name:'Wholesale desk' };
+  applyMode();
+}
+
+function applyMode(){
+  const partner = !!viewingPartner;
+  clearRoleDom();
+  document.getElementById('brandSub').textContent =
+    partner ? 'maison de parfum · partner dashboard' : 'maison de parfum · wholesale desk';
+
+  document.querySelectorAll('.tab').forEach(t => {
+    const forThisMode = t.dataset.role === (partner ? 'reseller' : 'admin');
+    t.hidden = !forThisMode || (t.dataset.admin === 'yes' && !isAdmin);
+  });
+
+  document.getElementById('viewAs').value = viewingPartner || '';
+  document.getElementById('partnerBanner').hidden = !partner;
+  if (partner){
+    const r = resellers.find(x => x.name === viewingPartner);
+    document.getElementById('bannerText').innerHTML =
+      `Viewing <b>${esc(r.name)}</b> — the dashboard this partner sees. ${esc(r.region)}.`;
+  }
+  document.getElementById('addPartner').hidden = !isAdmin;
+  document.getElementById('adminBtn').textContent = isAdmin ? 'Admin unlocked' : 'Admin';
+  document.getElementById('adminBtn').classList.toggle('on', isAdmin);
+
+  const first = partner ? 'mine' : 'overview';
+  const open = document.querySelector('.tab.on');
+  showView(open && !open.hidden ? open.dataset.view : first);
+  renderAll();
+}
+
+/* ————— Admin latch ————— */
+function openAdmin(){
+  if (isAdmin){                                   // already in: this locks again
+    isAdmin = false;
+    try { localStorage.removeItem('vermonix-admin'); } catch {}
+    toast('Admin extras hidden');
+    applyMode();
+    return;
+  }
+  document.getElementById('codeError').textContent = '';
+  document.getElementById('adminScrim').hidden = false;
+  document.getElementById('adminModal').hidden = false;
+  document.getElementById('adminCode').value = '';
+  document.getElementById('adminCode').focus();
+}
+function closeAdmin(){
+  document.getElementById('adminScrim').hidden = true;
+  document.getElementById('adminModal').hidden = true;
+}
+document.getElementById('adminBtn').addEventListener('click', openAdmin);
+document.getElementById('adminClose').addEventListener('click', closeAdmin);
+document.getElementById('adminScrim').addEventListener('click', closeAdmin);
+document.getElementById('adminForm').addEventListener('submit', e => {
+  e.preventDefault();
+  if (hashCode(document.getElementById('adminCode').value) !== ADMIN_HASH){
+    document.getElementById('codeError').textContent = 'That code is not right.';
+    return;
+  }
+  isAdmin = true;
+  try { localStorage.setItem('vermonix-admin','1'); } catch {}
+  closeAdmin(); applyMode();
+  toast('Admin extras unlocked');
+});
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape' && !document.getElementById('adminModal').hidden) closeAdmin();
+});
+
+/* ————— Who am I looking at ————— */
+function fillViewAs(){
+  const sel = document.getElementById('viewAs');
+  sel.innerHTML = '<option value="">All partners · wholesale desk</option>' +
+    resellers.slice().sort((a,b) => a.name.localeCompare(b.name))
+      .map(r => `<option value="${esc(r.name)}">${esc(r.name)}</option>`).join('');
+  sel.value = viewingPartner || '';
+}
+document.getElementById('viewAs').addEventListener('change', e => setView(e.target.value || null));
+document.getElementById('bannerBack').addEventListener('click', () => setView(null));
+
+document.getElementById('tabs').addEventListener('click', e => {
+  const btn = e.target.closest('.tab');
+  if (btn && !btn.hidden) showView(btn.dataset.view);
+});
+
+document.querySelectorAll('[data-period]').forEach(b => b.addEventListener('click', () => {
+  period = b.dataset.period;
+  document.querySelectorAll('[data-period]').forEach(x => x.classList.toggle('on', x === b));
+  renderAll();
+}));
+
+document.getElementById('chips').addEventListener('click', e => {
+  const c = e.target.closest('.chip'); if (!c) return;
+  currentFilter = c.dataset.f; renderChips(); renderResellers();
+});
+document.getElementById('invChips').addEventListener('click', e => {
+  const c = e.target.closest('.chip'); if (!c) return;
+  invFilter = c.dataset.inv; renderInventory();
+});
+document.getElementById('compChips').addEventListener('click', e => {
+  const c = e.target.closest('.chip'); if (!c) return;
+  compFilter = c.dataset.comp; renderCompliance();
+});
+document.getElementById('search').addEventListener('input', e => { searchTerm = e.target.value; renderResellers(); });
+
+document.querySelectorAll('#resellerTable th.sortable').forEach(th => {
+  th.addEventListener('click', () => {
+    const k = th.dataset.key;
+    sort = { key:k, dir: sort.key === k ? -sort.dir
+      : (['name','tier','status','renewal'].includes(k) ? 1 : -1) };
+    renderResellers();
+  });
+});
+document.getElementById('resellerBody').addEventListener('click', e => {
+  const tr = e.target.closest('tr'); if (tr) openDrawer(tr.dataset.name);
+});
+document.getElementById('resellerBody').addEventListener('keydown', e => {
+  if (e.key === 'Enter' || e.key === ' '){
+    const tr = e.target.closest('tr'); if (tr){ e.preventDefault(); openDrawer(tr.dataset.name); }
+  }
+});
+document.getElementById('drawerClose').addEventListener('click', closeDrawer);
+document.getElementById('scrim').addEventListener('click', closeDrawer);
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape' && !document.getElementById('drawer').hidden) closeDrawer();
+});
+
+function toCsv(head, rows){
+  return [head, ...rows].map(line => line.map(v =>
+    /[",]/.test(String(v)) ? '"' + String(v).replace(/"/g,'""') + '"' : v).join(',')).join('\n');
+}
+async function copy(text, msg){
+  try { await navigator.clipboard.writeText(text); toast(msg); }
+  catch { toast('Clipboard blocked — select the table and copy manually'); }
+}
+document.getElementById('copyCsv').addEventListener('click', () => {
+  const rows = visibleResellers();
+  copy(toCsv(['Partner','Region','Tier','Sell-through %','Stock on hand','Sell-in PHP','Renewal','Compliance','Status'],
+    rows.map(r => [r.name, r.region, r.tier, r.sellThrough, r.stock, r.rev[period], r.renewal, r.compliance, r.status])),
+    rows.length + ' partners copied as CSV');
+});
+document.getElementById('copyStatement').addEventListener('click', () => {
+  const rows = statementRows();
+  copy(toCsv(['Period','Gross sell-in PHP','My margin PHP','Co-op marketing PHP','Net to me PHP','Payment'],
+    rows.map(s => [s.label, Math.round(s.gross), Math.round(s.margin), Math.round(s.coop), Math.round(s.net), s.paid])),
+    'Statement copied as CSV');
+});
+
+/* ————— Theme ————— */
+const btnNight = document.getElementById('btnNight'), btnDay = document.getElementById('btnDay');
+const prefersLight = window.matchMedia('(prefers-color-scheme: light)');
+function markThemeButtons(){
+  const stamped = document.documentElement.getAttribute('data-theme');
+  const isDay = stamped ? stamped === 'light' : prefersLight.matches;
+  btnDay.classList.toggle('on', isDay);
+  btnNight.classList.toggle('on', !isDay);
+}
+function setTheme(t){
+  document.documentElement.setAttribute('data-theme', t);
+  try { localStorage.setItem('vermonix-theme', t); } catch {}
+  markThemeButtons();
+  if (session) buildCharts();
+}
+btnNight.addEventListener('click', () => setTheme('dark'));
+btnDay.addEventListener('click', () => setTheme('light'));
+prefersLight.addEventListener('change', () => {
+  if (!document.documentElement.getAttribute('data-theme')){ markThemeButtons(); if (session) buildCharts(); }
+});
+try {
+  const saved = localStorage.getItem('vermonix-theme');
+  if (saved === 'light' || saved === 'dark') document.documentElement.setAttribute('data-theme', saved);
+} catch {}
+markThemeButtons();
+
+/* Partners added on this browser, merged back in before the first render. */
+loadLocalPartners().forEach(r => {
+  if (!resellers.some(x => x.name === r.name || x.phone === r.phone)) resellers.push(r);
+});
+fillViewAs();
+applyMode();
+</script>
+
+</body>
+</html>
