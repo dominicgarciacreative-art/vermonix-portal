@@ -760,7 +760,7 @@ tfoot td{ border-top:1px solid var(--line); border-bottom:none; color:var(--text
 
 <footer class="site-foot">
   <span><b>Vermonix</b> is a demonstration build — every partner, figure and case in it is invented.</span>
-  <span>Open to anyone with the link · figures in Philippine pesos</span>
+  <span id="storageNote">Open to anyone with the link · figures in Philippine pesos</span>
 </footer>
 
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
@@ -1659,8 +1659,15 @@ function loadLocalPartners(){
   } catch { return []; }
 }
 function saveLocalPartners(){
+  if (api.live) return;                         // the worker is the record instead
   try { localStorage.setItem(LOCAL_KEY, JSON.stringify(resellers.filter(r => r.local))); }
   catch { toast('This browser is blocking local storage — the partner will be lost on refresh'); }
+}
+
+/* Replace the added partners with whatever the server holds. */
+function mergeServerPartners(list){
+  for (let i = resellers.length - 1; i >= 0; i--) if (resellers[i].local) resellers.splice(i,1);
+  list.forEach(r => { if (!resellers.some(x => x.name === r.name)) resellers.push(r); });
 }
 
 /* Their opening mix, until real sell-out data is imported: the house
@@ -1740,17 +1747,31 @@ function submitPartner(e){
     top: estimateTop(mtd)
   };
 
+  if (api.live){
+    const btn = document.querySelector('#addForm button[type="submit"]');
+    btn.disabled = true; btn.textContent = 'Saving…';
+    apiCall('/api/partners', r).then(d => {
+      mergeServerPartners(d.partners);
+      closeAddPartner(); fillViewAs(); renderAll();
+      toast(name + ' added — saved for everyone with the link');
+    }).catch(ex => { err.textContent = ex.message; })
+      .finally(() => { btn.disabled = false; btn.textContent = 'Add partner'; });
+    return false;
+  }
   resellers.push(r);
   saveLocalPartners();
   closeAddPartner();
   fillViewAs();
   renderAll();
-  toast(name + ' added — they can sign in with ' + prettyPhone(phone));
+  toast(name + ' added — saved in this browser only');
 }
 
 function removePartner(name){
   const i = resellers.findIndex(r => r.name === name);
   if (i < 0 || !resellers[i].local) return;
+  if (api.live) apiCall('/api/partners/delete', { name })
+    .then(d => mergeServerPartners(d.partners))
+    .catch(ex => toast(ex.message));
   resellers.splice(i,1);
   saveLocalPartners();
   closeDrawer();
@@ -1822,14 +1843,20 @@ function clearRoleDom(){
    a lock: it keeps the tab tidy, it does not protect anything.
    Real protection needs a server, and so does real partner data.
    ═══════════════════════════════════════════════════════════ */
-const ADMIN_HASH = 2781835266;
-const hashCode = v => {
-  let h = 2166136261;
-  for (const ch of String(v).trim().toUpperCase()){
-    h ^= ch.charCodeAt(0); h = Math.imul(h, 16777619) >>> 0;
-  }
-  return h;
-};
+/* When this page is served by its worker, the admin password is checked
+   on the server and partners live in KV — shared by everyone who opens
+   the link. Opened as a plain file (or inside a sandboxed preview) there
+   is no API, so it falls back to this browser's own storage. */
+const api = { live:false, configured:false };
+
+async function apiCall(path, body){
+  const res = await fetch(path, body ? {
+    method:'POST', headers:{ 'Content-Type':'application/json' }, body:JSON.stringify(body)
+  } : { headers:{ 'Accept':'application/json' } });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(data.error || ('Request failed (' + res.status + ')'));
+  return data;
+}
 
 let isAdmin = false;
 try { isAdmin = localStorage.getItem('vermonix-admin') === '1'; } catch {}
@@ -1878,14 +1905,21 @@ function applyMode(){
 
 /* ————— Admin latch ————— */
 function openAdmin(){
-  if (isAdmin){                                   // already in: this locks again
+  if (isAdmin){                                   // already in: this signs out
     isAdmin = false;
     try { localStorage.removeItem('vermonix-admin'); } catch {}
-    toast('Admin extras hidden');
+    if (api.live) apiCall('/api/logout', {}).catch(() => {});
+    toast(api.live ? 'Signed out' : 'Admin extras hidden');
     applyMode();
     return;
   }
   document.getElementById('codeError').textContent = '';
+  document.getElementById('adminTitle').textContent =
+    api.live ? (api.configured ? 'Admin sign-in' : 'Set the admin password') : 'Admin code';
+  document.querySelector('#adminModal .stamp').textContent = api.live
+    ? (api.configured ? 'Checked on the server. Partners you add are saved for everyone.'
+                      : 'Nobody has claimed this desk yet — the first password set becomes the admin password.')
+    : 'Unlocks compliance cases and adding partners on this browser.';
   document.getElementById('adminScrim').hidden = false;
   document.getElementById('adminModal').hidden = false;
   document.getElementById('adminCode').value = '';
@@ -1898,16 +1932,24 @@ function closeAdmin(){
 document.getElementById('adminBtn').addEventListener('click', openAdmin);
 document.getElementById('adminClose').addEventListener('click', closeAdmin);
 document.getElementById('adminScrim').addEventListener('click', closeAdmin);
-document.getElementById('adminForm').addEventListener('submit', e => {
+document.getElementById('adminForm').addEventListener('submit', async e => {
   e.preventDefault();
-  if (hashCode(document.getElementById('adminCode').value) !== ADMIN_HASH){
-    document.getElementById('codeError').textContent = 'That code is not right.';
-    return;
+  const pass = document.getElementById('adminCode').value;
+  const err = document.getElementById('codeError');
+  if (api.live){
+    try {
+      await apiCall(api.configured ? '/api/login' : '/api/setup', { password: pass });
+      api.configured = true;
+    } catch (ex) { err.textContent = ex.message; return; }
+  } else {
+    if (String(pass).trim().toUpperCase() !== 'VERMONIX-DESK-2026'){
+      err.textContent = 'That code is not right.'; return;
+    }
+    try { localStorage.setItem('vermonix-admin','1'); } catch {}
   }
   isAdmin = true;
-  try { localStorage.setItem('vermonix-admin','1'); } catch {}
   closeAdmin(); applyMode();
-  toast('Admin extras unlocked');
+  toast(api.live ? 'Signed in as admin' : 'Admin extras unlocked');
 });
 document.addEventListener('keydown', e => {
   if (e.key === 'Escape' && !document.getElementById('adminModal').hidden) closeAdmin();
@@ -2018,12 +2060,27 @@ try {
 } catch {}
 markThemeButtons();
 
-/* Partners added on this browser, merged back in before the first render. */
-loadLocalPartners().forEach(r => {
-  if (!resellers.some(x => x.name === r.name || x.phone === r.phone)) resellers.push(r);
-});
-fillViewAs();
-applyMode();
+/* Boot: if a worker is serving this page it owns the partner list and the
+   admin session; otherwise fall back to what this browser saved. */
+(async () => {
+  try {
+    const who = await apiCall('/api/whoami');
+    api.live = true;
+    api.configured = !!who.configured;
+    isAdmin = !!who.admin;
+    const { partners } = await apiCall('/api/partners');
+    mergeServerPartners(partners || []);
+  } catch {
+    api.live = false;
+    loadLocalPartners().forEach(r => {
+      if (!resellers.some(x => x.name === r.name || x.phone === r.phone)) resellers.push(r);
+    });
+  }
+  const note = document.getElementById('storageNote');
+  if (note && api.live) note.textContent = 'Partners added here are saved for everyone with the link.';
+  fillViewAs();
+  applyMode();
+})();
 </script>
 
 </body>
