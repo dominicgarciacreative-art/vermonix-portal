@@ -4,6 +4,15 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Vermonix Partner Portal</title>
+<meta name="theme-color" content="#0C0B09" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#FDFCF9" media="(prefers-color-scheme: light)">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Vermonix">
+<meta name="description" content="Vermonix wholesale partner desk — revenue, sell-through, stock cover and pricing cases. Demonstration build.">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="icon" href="icon-192.png" type="image/png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=Jost:wght@300;400;500&display=swap">
@@ -412,6 +421,24 @@ tfoot td{ border-top:1px solid var(--line); border-bottom:none; color:var(--text
 @media (max-width:860px){
   .frag{ grid-template-columns:1.8fr 1fr 1fr .7fr; }
   .frag-fam,.frag .share{ display:none; }
+}
+@media (max-width:760px){
+  /* Keep the controls on one line the thumb can swipe, instead of
+     four stacked rows pushing the figures below the fold. */
+  header{ padding:12px 18px 10px; gap:10px; align-items:center; }
+  .wordmark{ font-size:23px; }
+  .tagline{ display:none; }
+  .head-right{ width:100%; gap:8px; flex-wrap:nowrap; overflow-x:auto;
+    scrollbar-width:none; -webkit-overflow-scrolling:touch; }
+  .head-right::-webkit-scrollbar{ display:none; }
+  .head-right > *{ flex:none; }
+  .who span{ display:none; }
+  .viewas{ max-width:190px; }
+  .segmented button{ padding:5px 12px; }
+  /* stacked tiles read as a list, so the rule belongs on top */
+  .tile{ border-left:none; border-top:1px solid var(--line-soft); }
+  .tile:first-child{ border-top:none; }
+  .site-foot{ padding:20px 18px 34px; }
 }
 @media (max-width:640px){
   header,nav,main{ padding-left:18px; padding-right:18px; }
