@@ -1394,6 +1394,7 @@ function buildCharts(){
         scales:money2 }
     });
   }
+  resizeCharts();
 }
 
 
@@ -1788,9 +1789,16 @@ function renderAll(){
   buildCharts();
 }
 
+/* A chart built inside a hidden tab has no width, and does not pick one
+   up on its own when the tab is shown — so nudge them after any switch. */
+function resizeCharts(){
+  requestAnimationFrame(() => Object.values(charts).forEach(c => { try { c.resize(); } catch {} }));
+}
+
 function showView(name){
   document.querySelectorAll('.tab').forEach(b => b.classList.toggle('on', b.dataset.view === name));
   document.querySelectorAll('.view').forEach(v => v.classList.toggle('on', v.id === 'view-' + name));
+  resizeCharts();
 }
 
 /* Signing in as a different role must not leave the previous role's
