@@ -211,6 +211,34 @@ button,input,select{ font:inherit; color:inherit; }
 .who-chip{ display:flex; align-items:center; gap:9px; font-size:13px; color:var(--muted); }
 .who-chip b{ color:var(--text); font-weight:500; }
 
+/* ————— Product blocks ————— */
+.shelf{ display:grid; grid-template-columns:repeat(auto-fill,minmax(184px,1fr)); gap:14px; }
+.pcard{ background:var(--panel); border:1px solid var(--line-soft); border-radius:var(--r);
+  overflow:hidden; display:flex; flex-direction:column; }
+.pcard:hover{ border-color:var(--gold-soft); }
+/* The standee: where the bottle shot goes. Until there is one, a drawn
+   stand-in rather than a grey box. */
+.standee{ position:relative; aspect-ratio:4/5; display:grid; place-items:center;
+  background:
+    radial-gradient(120% 80% at 50% 12%, var(--gold-wash), transparent 62%),
+    linear-gradient(180deg, var(--panel-soft), var(--panel));
+  border-bottom:1px solid var(--line-soft); }
+.standee img{ width:100%; height:100%; object-fit:cover; }
+.standee svg{ width:56%; height:auto; }
+.standee .plinth{ position:absolute; left:50%; bottom:11%; transform:translateX(-50%);
+  width:56%; height:9px; border-radius:50%; background:rgba(0,0,0,.45); filter:blur(5px); }
+.standee .mark{ position:absolute; bottom:9px; right:11px; font-size:9.5px; letter-spacing:.10em;
+  text-transform:uppercase; color:var(--faint); }
+.pcard-body{ padding:13px 14px 14px; display:flex; flex-direction:column; gap:4px; flex:1; }
+.pcard-name{ font-weight:600; font-size:14.5px; letter-spacing:-.02em; }
+.pcard-sub{ color:var(--faint); font-size:11.5px; }
+.pcard-price{ margin-top:6px; font-weight:600; font-size:15px; color:var(--gold); }
+.pcard-price span{ display:block; color:var(--faint); font-size:11px; font-weight:400; letter-spacing:0; }
+.pcard-add{ display:flex; gap:7px; align-items:center; margin-top:10px; }
+.pcard-add input{ width:58px; background:var(--bg); border:1px solid var(--line); border-radius:999px;
+  color:var(--text); font-size:13px; padding:6px 10px; text-align:center; }
+.pcard-add button{ flex:1; }
+
 /* ————— Orders ————— */
 .basket{ margin-top:16px; border-top:1px solid var(--line-soft); }
 .basket-line{ display:grid; grid-template-columns:2fr auto auto auto; gap:14px; align-items:center;
@@ -1060,9 +1088,11 @@ td{ border-bottom:1px solid var(--line-soft); }
         <h2>Add an order</h2>
         <span class="section-note">Stock you want from Vermonix, at your trade price.</span>
       </div>
-      <div class="panel" style="padding:20px 22px">
+      <div class="shelf" id="shelf"></div>
+
+      <div class="panel" style="padding:20px 22px; margin-top:16px">
         <form id="orderForm" class="pos-grid" autocomplete="off">
-          <div class="f"><label for="or-item">Fragrance</label><select id="or-item"></select></div>
+          <div class="f"><label for="or-item">Add by name</label><select id="or-item"></select></div>
           <div class="f"><label for="or-qty">Quantity</label>
             <input id="or-qty" type="number" min="1" max="999" value="12" required></div>
           <div class="f pos-total"><label>Trade price each</label><b id="orUnit">₱0</b></div>
@@ -1259,6 +1289,9 @@ td{ border-bottom:1px solid var(--line-soft); }
           <input id="pr-conc" maxlength="40" placeholder="Eau de Parfum · 50ml"></div>
         <div class="f new-only"><label for="pr-srp">Recommended retail price</label>
           <div class="unit"><span>₱</span><input id="pr-srp" type="number" min="1" step="1" placeholder="6400"></div></div>
+        <div class="f wide new-only"><label for="pr-image">Photograph <span class="hint">optional</span></label>
+          <input id="pr-image" type="url" maxlength="300" placeholder="https://… link to a bottle shot">
+          <div class="hint">Shown on the order shelf. Leave it blank for the drawn stand-in.</div></div>
       </div>
     </div>
 
@@ -2461,7 +2494,8 @@ async function submitProduct(e){
     stock: { name, node, sku: $('pr-sku').value.trim() || skuFrom(name, size), size,
              onHand:+$('pr-onhand').value, alloc:+$('pr-alloc').value, run:+$('pr-run').value }
   };
-  if (!existing) payload.product = { name, conc, family:$('pr-family').value.trim(), srp:+$('pr-srp').value };
+  if (!existing) payload.product = { name, conc, family:$('pr-family').value.trim(),
+    srp:+$('pr-srp').value, image:$('pr-image').value.trim() };
 
   const btn = document.querySelector('#prodForm button[type="submit"]');
   if (!api.live){                                   // demo copy: keep it in this browser
@@ -2737,13 +2771,70 @@ document.getElementById('bookBody').addEventListener('change', async e => {
 });
 document.getElementById('or-item').addEventListener('change', orderSyncUnit);
 
+
+/* The stand-in bottle: an outline on a plinth, initials on the label,
+   shown until a real photograph is attached to the product. */
+function standee(f){
+  if (f.image) return `<img src="${esc(f.image)}" alt="${esc(f.name)}" loading="lazy" referrerpolicy="no-referrer">`;
+  const initials = f.name.split(/\s+/).map(w => w[0]).join('').slice(0,2).toUpperCase();
+  return `<span class="plinth"></span>
+    <svg viewBox="0 0 120 170" aria-hidden="true">
+      <defs>
+        <linearGradient id="g${initials}" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0" stop-color="var(--gold-soft)"/><stop offset="1" stop-color="var(--gold)"/>
+        </linearGradient>
+      </defs>
+      <rect x="46" y="6" width="28" height="20" rx="4" fill="url(#g${initials})" opacity=".85"/>
+      <rect x="54" y="26" width="12" height="12" fill="var(--gold-soft)" opacity=".6"/>
+      <path d="M28 52c0-8 6-14 14-14h36c8 0 14 6 14 14v88c0 8-6 14-14 14H42c-8 0-14-6-14-14z"
+            fill="none" stroke="url(#g${initials})" stroke-width="2.5"/>
+      <rect x="40" y="78" width="40" height="38" rx="3" fill="var(--gold)" opacity=".13"/>
+      <text x="60" y="103" text-anchor="middle" font-size="19" font-weight="600"
+            fill="var(--gold)" font-family="Poppins, sans-serif">${esc(initials)}</text>
+    </svg>
+    <span class="mark">no photograph yet</span>`;
+}
+
+function renderShelf(){
+  const el = document.getElementById('shelf');
+  if (!el) return;
+  el.innerHTML = fragrances.map(f => {
+    const trade = tradePrice(f.name);
+    return `<article class="pcard">
+      <div class="standee">${standee(f)}</div>
+      <div class="pcard-body">
+        <span class="pcard-name">${esc(f.name)}</span>
+        <span class="pcard-sub">${esc(f.conc)}</span>
+        <span class="pcard-price">${peso(trade)}<span>retail ${peso(f.srp)}</span></span>
+        <div class="pcard-add">
+          <input type="number" min="1" max="999" value="6" aria-label="Quantity of ${esc(f.name)}"
+                 data-qty="${esc(f.name)}">
+          <button class="ghost" data-add="${esc(f.name)}">Add</button>
+        </div>
+      </div>
+    </article>`;
+  }).join('');
+}
+
+document.getElementById('shelf').addEventListener('click', e => {
+  const b = e.target.closest('[data-add]'); if (!b) return;
+  const name = b.dataset.add;
+  const qty = Math.max(1, Math.round(+document.querySelector(`[data-qty="${CSS.escape(name)}"]`).value || 1));
+  const unit = tradePrice(name);
+  if (!unit) return toast('That product has no price yet');
+  const line = basket.find(l => l.item === name);
+  if (line) line.qty += qty; else basket.push({ item:name, qty, unit });
+  renderBasket();
+  toast(qty + ' × ' + name + ' added');
+});
+
 /* ═══════════════════════════════════════════════════════════
    Render + wiring
    ═══════════════════════════════════════════════════════════ */
 function renderAll(){
   if (!account) return;
   if (!isAdminUser()){                          // reseller: the board and their own books
-    renderLeaderboard(); renderPos(); renderBasket(); renderOrders(); buildCharts();
+    renderLeaderboard(); renderPos(); renderShelf(); renderBasket(); renderOrders(); buildCharts();
     return;
   }
   renderLedger();
