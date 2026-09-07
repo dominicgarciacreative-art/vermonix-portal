@@ -711,7 +711,10 @@ td{ border-bottom:1px solid var(--line-soft); }
     <form class="gate-form" id="registerForm" autocomplete="on" hidden>
       <div class="field"><label for="rg-name">Your name</label>
         <input id="rg-name" maxlength="40" placeholder="Ana Salvador" required></div>
-      <div class="field"><label for="rg-store">Shop or company</label>
+      <div class="field"><label for="rg-location">City or area you sell in</label>
+        <input id="rg-location" list="cityList" maxlength="40" placeholder="Cebu City" required>
+        <datalist id="cityList"></datalist></div>
+      <div class="field"><label for="rg-store">Shop name <span class="hint">optional</span></label>
         <input id="rg-store" maxlength="40" placeholder="Aurora Scents"></div>
       <div class="field"><label for="rg-email">Email</label>
         <input id="rg-email" type="email" autocomplete="username" placeholder="you@company.ph" required></div>
@@ -1047,7 +1050,7 @@ td{ border-bottom:1px solid var(--line-soft); }
         <span class="section-note">Change a role and it applies on their next request.</span></div>
       <div class="table-wrap">
         <table>
-          <thead><tr><th>Person</th><th>Email</th><th>Shop</th><th>Role</th><th>Linked partner</th><th>Status</th><th></th></tr></thead>
+          <thead><tr><th>Person</th><th>Email</th><th>Location</th><th>Role</th><th>Linked partner</th><th>Status</th><th></th></tr></thead>
           <tbody id="peopleBody"></tbody>
         </table>
       </div>
@@ -2596,7 +2599,14 @@ function showGate(){
   document.getElementById('li-email').focus();
 }
 
+/* The city list we use for partners doubles as suggestions here. */
+function fillCityList(){
+  const el = document.getElementById('cityList');
+  if (el && !el.children.length)
+    el.innerHTML = PH_CITIES.map(c => `<option value="${esc(c[1])}">`).join('');
+}
 document.getElementById('toRegister').addEventListener('click', () => {
+  fillCityList();
   document.getElementById('loginForm').hidden = true;
   document.getElementById('registerForm').hidden = false;
   document.getElementById('pendingNote').hidden = true;
@@ -2630,6 +2640,7 @@ document.getElementById('registerForm').addEventListener('submit', async e => {
   try {
     await apiCall('/api/register', {
       name: document.getElementById('rg-name').value,
+      location: document.getElementById('rg-location').value,
       store: document.getElementById('rg-store').value,
       email: document.getElementById('rg-email').value,
       password: document.getElementById('rg-pass').value
@@ -2772,7 +2783,8 @@ function renderAccess(){
       <span class="lb-rank">${esc((u.name || '?').slice(0,1).toUpperCase())}</span>
       <span>
         <span class="lb-name">${esc(u.name)}</span>
-        <span class="lb-sub">${esc(u.email)}${u.store ? ' · ' + esc(u.store) : ''}</span>
+        <span class="lb-sub">${esc(u.location || 'location not given')}${
+          u.store ? ' · ' + esc(u.store) : ''} · ${esc(u.email)}</span>
       </span>
       <span class="approve" data-email="${esc(u.email)}">
         <select class="mini-sel" data-role>
@@ -2791,7 +2803,8 @@ function renderAccess(){
   document.getElementById('peopleBody').innerHTML = people.map(u => `<tr>
     <td class="r-name">${esc(u.name)}</td>
     <td class="r-sub">${esc(u.email)}</td>
-    <td class="r-sub">${esc(u.store || '—')}</td>
+    <td><div>${esc(u.location || '—')}</div>${
+      u.store ? `<div class="r-sub">${esc(u.store)}</div>` : ''}</td>
     <td><span class="pill ${u.role === 'admin' ? 'p-gold' : 'p-flat'}">${esc(u.role)}</span></td>
     <td class="r-sub">${esc(u.partner || '—')}</td>
     <td><span class="pill ${u.status === 'active' ? 'p-ok' : u.status === 'pending' ? 'p-warn' : 'p-crit'}">${esc(u.status)}</span></td>
