@@ -211,6 +211,20 @@ button,input,select{ font:inherit; color:inherit; }
 .who-chip{ display:flex; align-items:center; gap:9px; font-size:13px; color:var(--muted); }
 .who-chip b{ color:var(--text); font-weight:500; }
 
+/* ————— Orders ————— */
+.basket{ margin-top:16px; border-top:1px solid var(--line-soft); }
+.basket-line{ display:grid; grid-template-columns:2fr auto auto auto; gap:14px; align-items:center;
+  padding:11px 2px; border-bottom:1px solid var(--line-soft); font-size:13.5px; }
+.basket-line b{ font-weight:600; }
+.basket-empty{ padding:16px 2px; color:var(--faint); font-size:13px; }
+.basket-foot{ display:flex; align-items:center; gap:12px; flex-wrap:wrap; margin-top:16px; }
+.basket-total{ color:var(--muted); font-size:12.5px; }
+.basket-total b{ display:inline-block; margin-left:8px; font-size:19px; font-weight:600;
+  color:var(--gold); letter-spacing:-.02em; }
+.state-sel{ background:var(--panel-soft); border:1px solid var(--line); border-radius:999px;
+  color:var(--text); font-size:12px; padding:5px 10px; }
+.line-list{ color:var(--muted); font-size:12.5px; }
+
 /* ————— Notifications ————— */
 .bell{ position:relative; background:var(--panel); border:1px solid var(--line); border-radius:999px;
   width:36px; height:36px; display:grid; place-items:center; cursor:pointer; color:var(--muted); flex:none; }
@@ -782,9 +796,11 @@ td{ border-bottom:1px solid var(--line-soft); }
   <button class="tab" data-view="resellers" data-role="admin">Partners</button>
   <button class="tab" data-view="inventory" data-role="admin">Inventory</button>
   <button class="tab" data-view="compliance" data-role="admin" data-admin="yes">Compliance<span class="count" id="tabFlags"></span></button>
+  <button class="tab" data-view="orderbook" data-role="admin">Orders</button>
   <button class="tab" data-view="access" data-role="admin" data-admin="yes">Access<span class="count" id="tabPending"></span></button>
   <button class="tab" data-view="board" data-role="reseller">Leaderboard</button>
   <button class="tab" data-view="pos" data-role="reseller">My sales</button>
+  <button class="tab" data-view="orders" data-role="reseller">Add order</button>
   <button class="tab" data-view="mine" data-role="partnerview">Performance</button>
   <button class="tab" data-view="statement" data-role="partnerview">Statements</button>
   <button class="tab" data-view="mycases" data-role="partnerview">Compliance<span class="count" id="tabMyFlags"></span></button>
@@ -1032,6 +1048,64 @@ td{ border-bottom:1px solid var(--line-soft); }
           <tbody id="posBody"></tbody>
         </table>
         <div class="empty" id="posEmpty" hidden>No sales recorded yet. <b>Your first one will show here.</b></div>
+      </div>
+    </section>
+  </div>
+
+
+  <!-- Reseller · orders to the maison -->
+  <div class="view" id="view-orders">
+    <section style="margin-top:26px">
+      <div class="section-head">
+        <h2>Add an order</h2>
+        <span class="section-note">Stock you want from Vermonix, at your trade price.</span>
+      </div>
+      <div class="panel" style="padding:20px 22px">
+        <form id="orderForm" class="pos-grid" autocomplete="off">
+          <div class="f"><label for="or-item">Fragrance</label><select id="or-item"></select></div>
+          <div class="f"><label for="or-qty">Quantity</label>
+            <input id="or-qty" type="number" min="1" max="999" value="12" required></div>
+          <div class="f pos-total"><label>Trade price each</label><b id="orUnit">₱0</b></div>
+          <div class="pos-actions">
+            <span class="form-error" id="orderError" role="alert"></span>
+            <button class="ghost" type="submit">Add to order</button>
+          </div>
+        </form>
+
+        <div class="basket" id="basket"></div>
+
+        <div class="basket-foot">
+          <input class="search" id="or-note" maxlength="140" placeholder="Note for the desk — optional">
+          <span class="spacer"></span>
+          <span class="basket-total">Order total <b id="orderTotal">₱0</b></span>
+          <button class="primary" id="placeOrder" disabled>Place order</button>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <div class="section-head"><h2>My orders</h2><span class="section-note" id="ordersNote"></span></div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Placed</th><th>Items</th><th>Units</th><th>Value</th><th>Status</th></tr></thead>
+          <tbody id="ordersBody"></tbody>
+        </table>
+        <div class="empty" id="ordersEmpty" hidden>No orders yet. <b>Your first one will show here.</b></div>
+      </div>
+    </section>
+  </div>
+
+  <!-- Admin · the order book -->
+  <div class="view" id="view-orderbook">
+    <div class="ledger" id="orderLedger" style="margin-top:26px"></div>
+    <section>
+      <div class="section-head"><h2>Order book</h2><span class="section-note" id="bookNote"></span></div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Placed</th><th>Partner</th><th>Items</th><th>Units</th><th>Value</th><th>Status</th></tr></thead>
+          <tbody id="bookBody"></tbody>
+        </table>
+        <div class="empty" id="bookEmpty" hidden>No orders yet. <b>Partners place them from their own desk.</b></div>
       </div>
     </section>
   </div>
@@ -2400,6 +2474,7 @@ async function submitProduct(e){
     const d = await apiCall('/api/catalogue', payload);
     mergeCatalogue(d.products, d.inventory);
     $('pos-item').innerHTML = posItems();
+    $('or-item').innerHTML = posItems();
     closeProduct(); renderAll();
     toast(existing ? 'Stock added at ' + node : name + ' added to the catalogue');
   } catch (ex) { err.textContent = ex.message; }
@@ -2531,19 +2606,150 @@ function startFeed(){
   syncAlertButton();
 }
 
+
+/* ═══════════════════════════════════════════════════════════
+   Orders
+
+   A reseller builds a basket at their trade price — retail less
+   their contracted margin — and places it. The desk sees every
+   order and moves it along; each move notifies the partner.
+   ═══════════════════════════════════════════════════════════ */
+let orders = [], basket = [];
+const ORDER_STATES = ['Placed','Confirmed','Packed','Shipped','Delivered','Cancelled'];
+const statePill = st => st === 'Delivered' ? 'p-ok' : st === 'Cancelled' ? 'p-crit'
+  : st === 'Shipped' || st === 'Packed' ? 'p-gold' : 'p-warn';
+
+/* What this reseller pays: retail less the margin in their contract. */
+function tradePrice(name){
+  const f = fragrances.find(x => x.name === name);
+  if (!f) return 0;
+  const r = resellers.find(x => x.name === (account && account.partner));
+  return Math.round(f.srp * (1 - (r ? r.margin : 0.36)));
+}
+function orderSyncUnit(){
+  document.getElementById('orUnit').textContent = peso(tradePrice(document.getElementById('or-item').value));
+}
+function renderBasket(){
+  const el = document.getElementById('basket');
+  el.innerHTML = basket.length ? basket.map((l,i) => `
+    <div class="basket-line">
+      <span>${esc(l.item)}</span>
+      <span class="num">${l.qty} × ${peso(l.unit)}</span>
+      <b class="num">${peso(l.qty * l.unit)}</b>
+      <button class="linkish" data-drop="${i}">remove</button>
+    </div>`).join('')
+    : `<div class="basket-empty">Nothing on this order yet.</div>`;
+  const total = sum(basket.map(l => l.qty * l.unit));
+  document.getElementById('orderTotal').textContent = peso(total);
+  document.getElementById('placeOrder').disabled = !basket.length;
+}
+
+function renderOrders(){
+  const mine = orders.filter(o => !account || o.by === account.email).slice().reverse();
+  document.getElementById('ordersNote').textContent =
+    mine.length ? mine.length + ' placed · ' + peso(sum(mine.map(o => o.total))) + ' in total' : '';
+  document.getElementById('ordersBody').innerHTML = mine.map(o => `<tr>
+    <td class="r-sub">${new Date(o.at).toLocaleDateString('en-PH',{day:'numeric',month:'short'})}</td>
+    <td><div class="line-list">${o.lines.map(l => esc(l.qty + ' × ' + l.item)).join('<br>')}</div>
+      ${o.note ? `<div class="r-sub">“${esc(o.note)}”</div>` : ''}</td>
+    <td class="num">${sum(o.lines.map(l => l.qty))}</td>
+    <td class="r-num num">${peso(o.total)}</td>
+    <td><span class="pill ${statePill(o.status)}">${esc(o.status)}</span></td>
+  </tr>`).join('');
+  document.getElementById('ordersEmpty').hidden = mine.length > 0;
+}
+
+function renderOrderBook(){
+  const rows = orders.slice().reverse();
+  const open = rows.filter(o => !['Delivered','Cancelled'].includes(o.status));
+  document.getElementById('orderLedger').innerHTML = `
+    <div class="tile lead">
+      <div class="k-label">Open orders</div>
+      <div class="k-value num">${peso(sum(open.map(o => o.total)))}</div>
+      <div class="k-foot"><span class="k-note">${open.length} awaiting the warehouse</span></div>
+    </div>
+    <div class="tile">
+      <div class="k-label">Orders placed</div>
+      <div class="k-value num">${rows.length}</div>
+      <div class="k-foot"><span class="k-note">${new Set(rows.map(o => o.partner)).size} partners ordering</span></div>
+    </div>
+    <div class="tile">
+      <div class="k-label">Units on order</div>
+      <div class="k-value num">${sum(open.map(o => sum(o.lines.map(l => l.qty))))}</div>
+      <div class="k-foot"><span class="k-note">across ${sum(open.map(o => o.lines.length))} lines</span></div>
+    </div>
+    <div class="tile">
+      <div class="k-label">Delivered</div>
+      <div class="k-value num">${peso(sum(rows.filter(o => o.status === 'Delivered').map(o => o.total)))}</div>
+      <div class="k-foot"><span class="k-note">${rows.filter(o => o.status === 'Delivered').length} completed</span></div>
+    </div>`;
+  document.getElementById('bookNote').textContent =
+    rows.length ? rows.length + ' orders · newest first' : '';
+  document.getElementById('bookBody').innerHTML = rows.map(o => `<tr>
+    <td class="r-sub">${new Date(o.at).toLocaleDateString('en-PH',{day:'numeric',month:'short'})}
+      <div class="r-sub">${esc(o.name)}</div></td>
+    <td class="r-name">${esc(o.partner)}</td>
+    <td><div class="line-list">${o.lines.map(l => esc(l.qty + ' × ' + l.item)).join('<br>')}</div>
+      ${o.note ? `<div class="r-sub">“${esc(o.note)}”</div>` : ''}</td>
+    <td class="num">${sum(o.lines.map(l => l.qty))}</td>
+    <td class="r-num num">${peso(o.total)}</td>
+    <td><select class="state-sel" data-order="${esc(o.id)}">${
+      ORDER_STATES.map(st => `<option${st === o.status ? ' selected' : ''}>${st}</option>`).join('')}</select></td>
+  </tr>`).join('');
+  document.getElementById('bookEmpty').hidden = rows.length > 0;
+}
+
+document.getElementById('orderForm').addEventListener('submit', e => {
+  e.preventDefault();
+  const err = document.getElementById('orderError'); err.textContent = '';
+  const item = document.getElementById('or-item').value;
+  const qty = +document.getElementById('or-qty').value;
+  const unit = tradePrice(item);
+  if (!item || !(qty > 0) || !(unit > 0)) return err.textContent = 'Pick a fragrance and a quantity.';
+  const line = basket.find(l => l.item === item);
+  if (line) line.qty += qty; else basket.push({ item, qty, unit });
+  renderBasket();
+});
+document.getElementById('basket').addEventListener('click', e => {
+  const b = e.target.closest('[data-drop]'); if (!b) return;
+  basket.splice(+b.dataset.drop, 1); renderBasket();
+});
+document.getElementById('placeOrder').addEventListener('click', async () => {
+  const err = document.getElementById('orderError'); err.textContent = '';
+  const btn = document.getElementById('placeOrder');
+  btn.disabled = true; btn.textContent = 'Placing…';
+  try {
+    const d = await apiCall('/api/orders', { lines: basket, note: document.getElementById('or-note').value });
+    orders = d.orders; basket = [];
+    document.getElementById('or-note').value = '';
+    renderBasket(); renderOrders(); loadEvents(false);
+    toast('Order placed');
+  } catch (ex) { err.textContent = ex.message; }
+  finally { btn.disabled = !basket.length; btn.textContent = 'Place order'; }
+});
+document.getElementById('bookBody').addEventListener('change', async e => {
+  const sel = e.target.closest('[data-order]'); if (!sel) return;
+  try {
+    const d = await apiCall('/api/orders/status', { id: sel.dataset.order, status: sel.value });
+    orders = d.orders; renderOrderBook();
+    toast('Marked ' + sel.value.toLowerCase());
+  } catch (ex) { toast(ex.message); }
+});
+document.getElementById('or-item').addEventListener('change', orderSyncUnit);
+
 /* ═══════════════════════════════════════════════════════════
    Render + wiring
    ═══════════════════════════════════════════════════════════ */
 function renderAll(){
   if (!account) return;
-  if (!isAdminUser()){                          // reseller: the board and their own book
-    renderLeaderboard(); renderPos(); buildCharts();
+  if (!isAdminUser()){                          // reseller: the board and their own books
+    renderLeaderboard(); renderPos(); renderBasket(); renderOrders(); buildCharts();
     return;
   }
   renderLedger();
   if (session.role === 'admin'){
     renderMap(); renderFragrances(); renderChips(); renderResellers();
-    renderLeaderboard(); renderInventory(); renderCompliance(); renderAccess();
+    renderLeaderboard(); renderInventory(); renderCompliance(); renderAccess(); renderOrderBook();
   } else {
     renderMine(); renderStatement(); renderMyCases();
   }
@@ -2908,6 +3114,7 @@ async function enterApp(){
     try { mergeServerPartners((await apiCall('/api/partners')).partners || []); } catch {}
     try { sales = (await apiCall('/api/sales')).sales || []; } catch { sales = []; }
     try { const c = await apiCall('/api/catalogue'); mergeCatalogue(c.products, c.inventory); } catch {}
+    try { orders = (await apiCall('/api/orders')).orders || []; } catch { orders = []; }
     await loadPeople();
   } else {
     loadLocalPartners().forEach(r => {
@@ -2915,7 +3122,8 @@ async function enterApp(){
     });
   }
   document.getElementById('pos-item').innerHTML = posItems();
-  posSyncPrice();
+  document.getElementById('or-item').innerHTML = posItems();
+  posSyncPrice(); orderSyncUnit(); basket = [];
   viewingPartner = null;
   session = { role:'admin', name:'Wholesale desk' };
   fillViewAs();
