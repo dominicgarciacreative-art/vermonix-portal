@@ -211,6 +211,9 @@ button,input,select{ font:inherit; color:inherit; }
 .who-chip{ display:flex; align-items:center; gap:9px; font-size:13px; color:var(--muted); }
 .who-chip b{ color:var(--text); font-weight:500; }
 
+.period-slot .segmented{ transform:scale(.92); transform-origin:left center; }
+.section-head .period-slot{ margin-right:auto; }
+
 /* ————— Product blocks ————— */
 .shelf{ display:grid; grid-template-columns:repeat(auto-fill,minmax(184px,1fr)); gap:14px; }
 .pcard{ background:var(--panel); border:1px solid var(--line-soft); border-radius:var(--r);
@@ -792,11 +795,6 @@ td{ border-bottom:1px solid var(--line-soft); }
     <span class="who-chip" id="whoChip"></span>
     <label class="who" for="viewAs"><span>View</span>
       <select class="viewas" id="viewAs"></select></label>
-    <div class="segmented" role="group" aria-label="Reporting period">
-      <button data-period="mtd" class="on">Month</button>
-      <button data-period="qtd">Quarter</button>
-      <button data-period="ytd">Year</button>
-    </div>
     <div class="segmented" role="group" aria-label="Theme">
       <button id="btnNight">Night</button>
       <button id="btnDay">Day</button>
@@ -808,6 +806,7 @@ td{ border-bottom:1px solid var(--line-soft); }
       </svg>
       <span class="dot" id="bellDot" hidden>0</span>
     </button>
+    <button class="ghost" id="profileBtn">Profile</button>
     <button class="ghost" id="signOut">Sign out</button>
     <div class="feed" id="feed" hidden>
       <div class="feed-head">
@@ -877,6 +876,7 @@ td{ border-bottom:1px solid var(--line-soft); }
     <section>
       <div class="section-head">
         <h2>Revenue by channel</h2>
+        <span class="period-slot"></span>
         <div class="legend">
           <span><span class="dot dot-gold"></span>Direct to customer</span>
           <span><span class="dot dot-2"></span>Partners</span>
@@ -895,6 +895,7 @@ td{ border-bottom:1px solid var(--line-soft); }
     <section style="margin-top:26px">
       <div class="section-head">
         <h2>Leaderboard</h2>
+        <span class="period-slot"></span>
         <span class="section-note" id="lbNote"></span>
       </div>
       <div class="panel"><div class="lb" id="lbList"></div></div>
@@ -1029,7 +1030,7 @@ td{ border-bottom:1px solid var(--line-soft); }
   <!-- Reseller · leaderboard -->
   <div class="view" id="view-board">
     <section style="margin-top:26px">
-      <div class="section-head"><h2>Leaderboard</h2><span class="section-note" id="lbNote2"></span></div>
+      <div class="section-head"><h2>Leaderboard</h2><span class="period-slot"></span><span class="section-note" id="lbNote2"></span></div>
       <div class="panel"><div class="lb" id="lbList2"></div></div>
       <div class="section-note" style="margin-top:9px">
         Momentum compares a partner's share of sell-in this month with their share across the year.
@@ -1068,7 +1069,7 @@ td{ border-bottom:1px solid var(--line-soft); }
     <div class="ledger" id="posLedger" style="margin-top:22px"></div>
 
     <section>
-      <div class="section-head"><h2>My sales</h2><span class="section-note" id="posNote"></span></div>
+      <div class="section-head"><h2>My sales</h2><span class="period-slot"></span><span class="section-note" id="posNote"></span></div>
       <div class="table-wrap">
         <table>
           <thead><tr><th>When</th><th>Fragrance</th><th>Qty</th><th>Unit</th>
@@ -1151,7 +1152,7 @@ td{ border-bottom:1px solid var(--line-soft); }
     </section>
     <section>
       <div class="section-head"><h2>People</h2>
-        <span class="section-note">Change a role and it applies on their next request.</span></div>
+        <span class="section-note">A role change applies within about a minute, on their next request after that.</span></div>
       <div class="table-wrap">
         <table>
           <thead><tr><th>Person</th><th>Email</th><th>Location</th><th>Role</th><th>Linked partner</th><th>Status</th><th></th></tr></thead>
@@ -1321,6 +1322,44 @@ td{ border-bottom:1px solid var(--line-soft); }
       <button type="submit" class="primary">Add to inventory</button>
     </div>
   </form>
+</div>
+
+<div class="modal-scrim" id="profScrim" hidden></div>
+<div class="modal narrow" id="profModal" role="dialog" aria-modal="true" aria-labelledby="profTitle" hidden>
+  <div class="modal-head">
+    <div>
+      <h3 id="profTitle">Your profile</h3>
+      <div class="stamp" id="profWho"></div>
+    </div>
+    <button class="close" id="profClose" aria-label="Close">✕</button>
+  </div>
+  <div class="modal-body">
+    <form class="form-sec" id="profForm" autocomplete="off">
+      <h6>How you appear</h6>
+      <div class="f"><label for="pf-name">Display name</label>
+        <input id="pf-name" maxlength="40" required></div>
+      <div class="f"><label for="pf-location">City or area</label>
+        <input id="pf-location" list="cityList" maxlength="40"></div>
+      <div class="f"><label for="pf-store">Shop name <span class="hint">optional</span></label>
+        <input id="pf-store" maxlength="40"></div>
+      <div class="form-error" id="profError" role="alert"></div>
+      <div class="modal-foot"><span class="spacer"></span>
+        <button class="primary" type="submit">Save profile</button></div>
+    </form>
+
+    <form class="form-sec" id="passForm" autocomplete="off">
+      <h6>Change password</h6>
+      <div class="f"><label for="pf-current">Current password</label>
+        <input id="pf-current" type="password" autocomplete="current-password" required></div>
+      <div class="f"><label for="pf-next">New password</label>
+        <input id="pf-next" type="password" autocomplete="new-password"
+               placeholder="At least 8 characters" required>
+        <div class="hint">The old one may still work for up to a minute while the change spreads.</div></div>
+      <div class="form-error" id="passError" role="alert"></div>
+      <div class="modal-foot"><span class="spacer"></span>
+        <button class="ghost" type="submit">Change password</button></div>
+    </form>
+  </div>
 </div>
 
 <footer class="site-foot">
@@ -2828,6 +2867,77 @@ document.getElementById('shelf').addEventListener('click', e => {
   toast(qty + ' × ' + name + ' added');
 });
 
+
+/* ═══════════════════════════════════════════════════════════
+   Profile and the period switch
+
+   The period belongs to the figures it changes, so the switch is
+   rendered beside them rather than sitting over the whole desk.
+   ═══════════════════════════════════════════════════════════ */
+const PERIODS = [['mtd','Month'],['qtd','Quarter'],['ytd','Year']];
+
+function renderPeriodSwitches(){
+  document.querySelectorAll('.period-slot').forEach(slot => {
+    slot.innerHTML = `<div class="segmented" role="group" aria-label="Reporting period">${
+      PERIODS.map(([k,label]) =>
+        `<button type="button" data-period="${k}"${k === period ? ' class="on"' : ''}>${label}</button>`).join('')
+    }</div>`;
+  });
+}
+document.addEventListener('click', e => {
+  const b = e.target.closest('[data-period]'); if (!b) return;
+  period = b.dataset.period;
+  renderPeriodSwitches();
+  renderAll();
+});
+
+/* ————— profile ————— */
+function openProfile(){
+  fillCityList();
+  $('profWho').textContent = account.email + ' · ' + (account.role === 'admin' ? 'Admin' : 'Reseller');
+  $('pf-name').value = account.name || '';
+  $('pf-location').value = account.location || '';
+  $('pf-store').value = account.store || '';
+  $('profError').textContent = ''; $('passError').textContent = '';
+  $('passForm').reset();
+  $('profScrim').hidden = false; $('profModal').hidden = false;
+  $('pf-name').focus();
+}
+function closeProfile(){ $('profScrim').hidden = true; $('profModal').hidden = true; }
+
+$('profileBtn').addEventListener('click', openProfile);
+$('profClose').addEventListener('click', closeProfile);
+$('profScrim').addEventListener('click', closeProfile);
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape' && !$('profModal').hidden) closeProfile();
+});
+
+$('profForm').addEventListener('submit', async e => {
+  e.preventDefault();
+  const err = $('profError'); err.textContent = '';
+  if (!api.live) return err.textContent = 'This demo copy has no server to save to.';
+  try {
+    const d = await apiCall('/api/profile', {
+      name: $('pf-name').value, location: $('pf-location').value, store: $('pf-store').value
+    });
+    account = d.user;
+    applyMode();
+    closeProfile();
+    toast('Profile saved');
+  } catch (ex) { err.textContent = ex.message; }
+});
+
+$('passForm').addEventListener('submit', async e => {
+  e.preventDefault();
+  const err = $('passError'); err.textContent = '';
+  if (!api.live) return err.textContent = 'This demo copy has no server to save to.';
+  try {
+    await apiCall('/api/profile/password', { current: $('pf-current').value, next: $('pf-next').value });
+    $('passForm').reset();
+    toast('Password changed — allow up to a minute to apply everywhere');
+  } catch (ex) { err.textContent = ex.message; }
+});
+
 /* ═══════════════════════════════════════════════════════════
    Render + wiring
    ═══════════════════════════════════════════════════════════ */
@@ -3182,6 +3292,7 @@ function applyMode(){
   add.hidden = !admin;
   document.getElementById('addProduct').hidden = !admin;
 
+  renderPeriodSwitches();
   const first = admin ? (partnerView ? 'mine' : 'overview') : 'board';
   const open = document.querySelector('.tab.on');
   showView(open && !open.hidden ? open.dataset.view : first);
@@ -3244,12 +3355,6 @@ document.getElementById('tabs').addEventListener('click', e => {
   const btn = e.target.closest('.tab');
   if (btn && !btn.hidden) showView(btn.dataset.view);
 });
-
-document.querySelectorAll('[data-period]').forEach(b => b.addEventListener('click', () => {
-  period = b.dataset.period;
-  document.querySelectorAll('[data-period]').forEach(x => x.classList.toggle('on', x === b));
-  renderAll();
-}));
 
 document.getElementById('chips').addEventListener('click', e => {
   const c = e.target.closest('.chip'); if (!c) return;
