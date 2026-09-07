@@ -211,6 +211,38 @@ button,input,select{ font:inherit; color:inherit; }
 .who-chip{ display:flex; align-items:center; gap:9px; font-size:13px; color:var(--muted); }
 .who-chip b{ color:var(--text); font-weight:500; }
 
+/* ————— Notifications ————— */
+.bell{ position:relative; background:var(--panel); border:1px solid var(--line); border-radius:999px;
+  width:36px; height:36px; display:grid; place-items:center; cursor:pointer; color:var(--muted); flex:none; }
+.bell:hover{ color:var(--text); border-color:var(--gold-soft); }
+.bell svg{ width:17px; height:17px; fill:none; stroke:currentColor; stroke-width:1.7;
+  stroke-linecap:round; stroke-linejoin:round; }
+.bell .dot{ position:absolute; top:-3px; right:-3px; min-width:18px; height:18px; padding:0 5px;
+  border-radius:999px; background:var(--grad); color:var(--on-gold); font-size:10.5px; font-weight:600;
+  display:grid; place-items:center; border:2px solid var(--bg); }
+.bell .dot[hidden]{ display:none; }
+.feed{ position:absolute; top:52px; right:0; width:min(360px,calc(100vw - 28px)); z-index:40;
+  background:var(--bg); border:1px solid var(--line-soft); border-radius:var(--r);
+  box-shadow:var(--shadow); overflow:hidden; }
+.feed-head{ display:flex; align-items:center; justify-content:space-between; gap:10px;
+  padding:13px 16px; border-bottom:1px solid var(--line-soft); }
+.feed-head h5{ margin:0; font-size:10.5px; letter-spacing:.08em; text-transform:uppercase;
+  color:var(--muted); font-weight:500; }
+.feed-list{ max-height:min(60vh,420px); overflow-y:auto; }
+.feed-item{ display:flex; gap:12px; padding:13px 16px; border-top:1px solid var(--line-soft); }
+.feed-item:first-child{ border-top:none; }
+.feed-item.unseen{ background:var(--gold-wash); }
+.feed-ico{ width:30px; height:30px; border-radius:50%; flex:none; display:grid; place-items:center;
+  font-size:13px; background:var(--panel-soft); border:1px solid var(--line); }
+.feed-item.sale .feed-ico{ color:var(--ok); }
+.feed-item.register .feed-ico{ color:var(--gold); }
+.feed-item.approval .feed-ico{ color:var(--accent2); }
+.feed-text{ font-size:13.5px; line-height:1.45; }
+.feed-when{ color:var(--faint); font-size:11.5px; margin-top:2px; }
+.feed-empty{ padding:26px 16px; text-align:center; color:var(--muted); font-size:13px; }
+.head-right{ position:relative; }
+@media (max-width:760px){ .feed{ position:fixed; top:auto; bottom:78px; right:14px; left:14px; width:auto; } }
+
 /* ————— Leaderboard ————— */
 .lb{ display:flex; flex-direction:column; }
 .lb-row{ display:grid; grid-template-columns:44px 2fr 1.5fr 1fr auto; gap:16px;
@@ -724,7 +756,21 @@ td{ border-bottom:1px solid var(--line-soft); }
       <button id="btnNight">Night</button>
       <button id="btnDay">Day</button>
     </div>
+    <button class="bell" id="bell" aria-label="Notifications" hidden>
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M18 8a6 6 0 1 0-12 0c0 7-3 8-3 8h18s-3-1-3-8"></path>
+        <path d="M13.7 21a2 2 0 0 1-3.4 0"></path>
+      </svg>
+      <span class="dot" id="bellDot" hidden>0</span>
+    </button>
     <button class="ghost" id="signOut">Sign out</button>
+    <div class="feed" id="feed" hidden>
+      <div class="feed-head">
+        <h5>Notifications</h5>
+        <button class="linkish" id="alertsOn">Alert me</button>
+      </div>
+      <div class="feed-list" id="feedList"></div>
+    </div>
   </div>
 </header>
 
@@ -2388,6 +2434,100 @@ document.getElementById('invBody').addEventListener('click', e => {
   removeStock(b.dataset.stock, b.dataset.node);
 });
 
+
+/* ═══════════════════════════════════════════════════════════
+   Notifications
+
+   The worker writes an event when someone registers, when a sale
+   is rung up, and when an account is approved. Admins see the
+   first two; the person concerned sees the third. The bell polls
+   while the tab is in front, and can raise a desktop alert if the
+   browser has been given permission.
+   ═══════════════════════════════════════════════════════════ */
+let events = [], seenAt = 0, feedTimer = null, alerted = new Set();
+
+const timeAgo = ms => {
+  const s = Math.max(0, (Date.now() - ms) / 1000);
+  if (s < 60) return 'just now';
+  if (s < 3600) return Math.floor(s/60) + ' min ago';
+  if (s < 86400) return Math.floor(s/3600) + 'h ago';
+  if (s < 604800) return Math.floor(s/86400) + 'd ago';
+  return new Date(ms).toLocaleDateString('en-PH', { day:'numeric', month:'short' });
+};
+const feedIcon = t => t === 'sale' ? '₱' : t === 'register' ? '☺' : '✓';
+
+function renderFeed(){
+  const unseen = events.filter(e => e.at > seenAt).length;
+  const dot = document.getElementById('bellDot');
+  dot.hidden = unseen === 0;
+  dot.textContent = unseen > 9 ? '9+' : unseen;
+  document.getElementById('feedList').innerHTML = events.length ? events.map(e => `
+    <div class="feed-item ${esc(e.type)}${e.at > seenAt ? ' unseen' : ''}">
+      <span class="feed-ico">${feedIcon(e.type)}</span>
+      <span>
+        <span class="feed-text">${esc(e.text)}</span>
+        <span class="feed-when">${esc(timeAgo(e.at))}</span>
+      </span>
+    </div>`).join('')
+    : `<div class="feed-empty">Nothing yet. Sales and access requests land here.</div>`;
+}
+
+async function loadEvents(announce){
+  if (!api.live || !account) return;
+  try {
+    const d = await apiCall('/api/events');
+    const fresh = d.events || [];
+    if (announce){
+      fresh.filter(e => e.at > seenAt && !alerted.has(e.id)).forEach(e => {
+        alerted.add(e.id);
+        if (window.Notification && Notification.permission === 'granted')
+          new Notification('Vermonix', { body: e.text, tag: e.id });
+      });
+    }
+    events = fresh; seenAt = d.seen || 0;
+    renderFeed();
+  } catch {}
+}
+
+async function markSeen(){
+  if (!api.live) return;
+  try { await apiCall('/api/events/seen', {}); seenAt = Date.now(); renderFeed(); } catch {}
+}
+
+document.getElementById('bell').addEventListener('click', async () => {
+  const feed = document.getElementById('feed');
+  const opening = feed.hidden;
+  feed.hidden = !opening;
+  if (opening){ await loadEvents(false); await markSeen(); }
+});
+document.addEventListener('click', e => {
+  if (!e.target.closest('#feed,#bell')) document.getElementById('feed').hidden = true;
+});
+document.getElementById('alertsOn').addEventListener('click', async () => {
+  if (!window.Notification) return toast('This browser has no desktop notifications');
+  const perm = await Notification.requestPermission();
+  toast(perm === 'granted' ? 'Desktop alerts on' : 'Desktop alerts left off');
+  syncAlertButton();
+});
+function syncAlertButton(){
+  const b = document.getElementById('alertsOn');
+  const perm = window.Notification ? Notification.permission : 'unsupported';
+  b.hidden = perm === 'granted' || perm === 'unsupported';
+  b.textContent = perm === 'denied' ? 'Alerts blocked' : 'Alert me';
+  b.disabled = perm === 'denied';
+}
+
+/* Poll only while the tab is in front — a background tab costs nothing. */
+function startFeed(){
+  clearInterval(feedTimer);
+  if (!api.live) { document.getElementById('bell').hidden = true; return; }
+  document.getElementById('bell').hidden = false;
+  loadEvents(false);
+  feedTimer = setInterval(() => { if (!document.hidden) loadEvents(true); }, 45000);
+  document.addEventListener('visibilitychange', () => { if (!document.hidden) loadEvents(true); });
+  syncAlertButton();
+}
+
 /* ═══════════════════════════════════════════════════════════
    Render + wiring
    ═══════════════════════════════════════════════════════════ */
@@ -2505,6 +2645,9 @@ document.getElementById('signOut').addEventListener('click', async () => {
   await apiCall('/api/logout', {}).catch(() => {});
   account = null; session = { role:'admin', name:'' }; viewingPartner = null;
   Object.keys(charts).forEach(k => { charts[k].destroy(); delete charts[k]; });
+  clearInterval(feedTimer); events = []; seenAt = 0;
+  document.getElementById('feed').hidden = true;
+  document.getElementById('bell').hidden = true;
   showGate();
   toast('Signed out');
 });
@@ -2598,6 +2741,7 @@ document.getElementById('posForm').addEventListener('submit', async e => {
     document.getElementById('pos-qty').value = 1;
     posSyncTotal();
     renderPos();
+    loadEvents(false);
     toast('Sale recorded');
   } catch (ex) { err.textContent = ex.message; }
 });
@@ -2763,6 +2907,7 @@ async function enterApp(){
   session = { role:'admin', name:'Wholesale desk' };
   fillViewAs();
   applyMode();
+  startFeed();
 }
 
 /* Boot: resume a session if the cookie is still good, else the gate. */
