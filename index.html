@@ -826,6 +826,7 @@ td{ border-bottom:1px solid var(--line-soft); }
   <button class="tab" data-view="orderbook" data-role="admin">Orders</button>
   <button class="tab" data-view="access" data-role="admin" data-admin="yes">Access<span class="count" id="tabPending"></span></button>
   <button class="tab" data-view="board" data-role="reseller">Leaderboard</button>
+  <button class="tab" data-view="mine" data-role="reseller">My sales</button>
   <button class="tab" data-view="orders" data-role="reseller">Add order</button>
   <button class="tab" data-view="mine" data-role="partnerview">Performance</button>
   <button class="tab" data-view="statement" data-role="partnerview">Statements</button>
@@ -974,7 +975,7 @@ td{ border-bottom:1px solid var(--line-soft); }
   <!-- Partner · my performance -->
   <div class="view" id="view-mine">
     <section style="margin-top:28px">
-      <div class="section-head"><h2>My sell-in, month by month</h2>
+      <div class="section-head"><h2>My sales, month by month</h2>
         <span class="section-note" id="mineNote"></span></div>
       <div class="panel chart-panel"><canvas id="mineChart" height="270"></canvas></div>
     </section>
@@ -1940,6 +1941,7 @@ function buildCharts(){
           y:{ grid:{ display:false }, border:{ color:line }, ticks:{ font:{ size:10.5 } } } } }
     });
   } else {
+    if (!linkedPartner()) return;
     const r = me(), monthly = myMonthly(p);
     const mc = document.getElementById('mineChart').getContext('2d');
     charts.mine = new Chart(mc, {
@@ -2897,7 +2899,8 @@ $('passForm').addEventListener('submit', async e => {
    ═══════════════════════════════════════════════════════════ */
 function renderAll(){
   if (!account) return;
-  if (!isAdminUser()){                          // reseller: the board and their own books
+  if (!isAdminUser()){                          // reseller: their figures, the board, ordering
+    if (linkedPartner()) { renderLedger(); renderMine(); } else renderUnlinked();
     renderLeaderboard(); renderShelf(); renderBasket(); renderOrders(); buildCharts();
     return;
   }
@@ -3024,6 +3027,23 @@ document.getElementById('signOut').addEventListener('click', async () => {
   toast('Signed out');
 });
 
+/* An approved reseller may not be attached to a partner record yet; their
+   own figures live on that record, so say so rather than half-render. */
+const linkedPartner = () => !!(account && account.partner &&
+  resellers.some(r => r.name === account.partner));
+
+function renderUnlinked(){
+  document.getElementById('ledger').innerHTML = `
+    <div class="tile" style="grid-column:1 / -1">
+      <div class="k-label">My sales</div>
+      <div class="k-value" style="font-size:19px">Not linked to a partner account yet</div>
+      <div class="k-foot"><span class="k-note">Ask the desk to attach your login to your shop, and your
+        sell-in, margin and sell-through will appear here.</span></div>
+    </div>`;
+  ['mineList','mineFacts'].forEach(id => { const el = document.getElementById(id); if (el) el.innerHTML = ''; });
+  document.getElementById('mineNote').textContent = 'Awaiting a partner link';
+}
+
 /* ————— the reseller's product list, shared by the order shelf ————— */
 function posItems(){
   return fragrances.map(f =>
@@ -3126,6 +3146,7 @@ function setView(partnerName){
 function applyMode(){
   const admin = isAdminUser();
   const partnerView = admin && !!viewingPartner;
+  if (!admin) session = { role:'reseller', partner:account.partner, name:account.name };
   clearRoleDom();
 
   document.getElementById('brandSub').textContent = admin
