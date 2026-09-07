@@ -848,6 +848,7 @@ td{ border-bottom:1px solid var(--line-soft); }
       <div class="chips" id="invChips"></div>
       <span class="spacer"></span>
       <span class="section-note">Cover = free stock ÷ 4-week average depletion</span>
+      <button class="primary" id="addProduct">Add product</button>
     </div>
     <div class="table-wrap">
       <table>
@@ -1108,6 +1109,60 @@ td{ border-bottom:1px solid var(--line-soft); }
       <span class="spacer"></span>
       <button type="button" class="ghost" id="addCancel">Cancel</button>
       <button type="submit" class="primary">Add partner</button>
+    </div>
+  </form>
+</div>
+
+<div class="modal-scrim" id="prodScrim" hidden></div>
+<div class="modal" id="prodModal" role="dialog" aria-modal="true" aria-labelledby="prodTitle" hidden>
+  <div class="modal-head">
+    <div>
+      <h3 id="prodTitle">Add stock</h3>
+      <div class="stamp">A new product, or another holding for one you already carry.</div>
+    </div>
+    <button class="close" id="prodClose" aria-label="Close">✕</button>
+  </div>
+  <form class="modal-body" id="prodForm" autocomplete="off">
+    <div class="form-sec">
+      <h6>Product</h6>
+      <div class="form-grid">
+        <div class="f wide"><label for="pr-which">Which product</label>
+          <select id="pr-which"></select></div>
+        <div class="f new-only"><label for="pr-name">Name</label>
+          <input id="pr-name" maxlength="40" placeholder="Vetiver Noir"></div>
+        <div class="f new-only"><label for="pr-family">Olfactive family</label>
+          <input id="pr-family" maxlength="30" placeholder="Smoky vetiver"></div>
+        <div class="f new-only"><label for="pr-conc">Concentration and size</label>
+          <input id="pr-conc" maxlength="40" placeholder="Eau de Parfum · 50ml"></div>
+        <div class="f new-only"><label for="pr-srp">Recommended retail price</label>
+          <div class="unit"><span>₱</span><input id="pr-srp" type="number" min="1" step="1" placeholder="6400"></div></div>
+      </div>
+    </div>
+
+    <div class="form-sec">
+      <h6>Holding</h6>
+      <div class="form-grid">
+        <div class="f"><label for="pr-node">Where it sits</label>
+          <input id="pr-node" list="nodeList" maxlength="30" placeholder="Manila DC" required>
+          <datalist id="nodeList"></datalist></div>
+        <div class="f"><label for="pr-sku">SKU</label>
+          <input id="pr-sku" maxlength="20" placeholder="VN-EDP-50"></div>
+        <div class="f"><label for="pr-onhand">On hand</label>
+          <div class="unit"><span>units</span><input id="pr-onhand" type="number" min="0" step="1" value="500" required></div></div>
+        <div class="f"><label for="pr-alloc">Allocated</label>
+          <div class="unit"><span>units</span><input id="pr-alloc" type="number" min="0" step="1" value="0" required></div></div>
+        <div class="f"><label for="pr-run">Weekly depletion</label>
+          <div class="unit"><span>/ wk</span><input id="pr-run" type="number" min="1" step="1" value="40" required></div>
+          <div class="hint">Used for weeks of cover, so keep it honest.</div></div>
+        <div class="f pos-total"><label>Weeks of cover</label><b id="prCover">—</b></div>
+      </div>
+    </div>
+
+    <div class="form-error" id="prodError" role="alert"></div>
+    <div class="modal-foot">
+      <span class="spacer"></span>
+      <button type="button" class="ghost" id="prodCancel">Cancel</button>
+      <button type="submit" class="primary">Add to inventory</button>
     </div>
   </form>
 </div>
@@ -1416,7 +1471,8 @@ function renderFragrances(){
         <div class="num">${f.units[period].toLocaleString('en-PH')} units</div>
         <div class="share"><span class="track"><span class="fill" style="width:${share}%"></span></span>${share}%</div>
         <div class="frag-rev num">${peso(f.rev[period])}</div>
-        <div class="growth ${g < 0 ? 'down' : 'up'} num">${g < 0 ? '−' : '+'}${Math.abs(g)}%</div>
+        <div class="growth ${f.isNew ? '' : (g < 0 ? 'down' : 'up')} num">${
+          f.isNew ? '<span class="pill p-flat">new</span>' : (g < 0 ? '−' : '+') + Math.abs(g) + '%'}</div>
       </div>`;
     }).join('');
 }
@@ -1491,7 +1547,8 @@ function renderInventory(){
       <td class="num">${r.alloc.toLocaleString('en-PH')}</td>
       <td class="num">${r.run.toLocaleString('en-PH')} / wk</td>
       <td class="r-num num">${c.toFixed(1)}</td>
-      <td><span class="pill ${coverPill(c)}">${esc(coverAction(c))}</span></td>
+      <td><span class="pill ${coverPill(c)}">${esc(coverAction(c))}</span>${
+        r.local ? ` <button class="linkish" data-stock="${esc(r.name)}" data-node="${esc(r.node)}">remove</button>` : ''}</td>
     </tr>`;
   }).join('');
   document.getElementById('invEmpty').hidden = rows.length > 0;
@@ -2203,6 +2260,134 @@ document.getElementById('lbList').addEventListener('click', e => {
   if (b) openDrawer(b.dataset.partner);
 });
 
+
+/* ═══════════════════════════════════════════════════════════
+   Catalogue and stock
+
+   Adding a product writes the catalogue entry with no history —
+   it starts at zero units and zero revenue rather than borrowing
+   another fragrance's numbers — and the first holding beside it.
+   The product then appears wherever fragrances appear, including
+   the reseller till.
+   ═══════════════════════════════════════════════════════════ */
+function mergeCatalogue(products, stock){
+  for (let i = fragrances.length - 1; i >= 0; i--) if (fragrances[i].local) fragrances.splice(i,1);
+  (products || []).forEach(p => {
+    if (fragrances.some(f => f.name === p.name)) return;
+    fragrances.push({ ...p, isNew:true,
+      units:{mtd:0,qtd:0,ytd:0}, rev:{mtd:0,qtd:0,ytd:0}, growth:{mtd:0,qtd:0,ytd:0} });
+  });
+  for (let i = inventory.length - 1; i >= 0; i--) if (inventory[i].local) inventory.splice(i,1);
+  (stock || []).forEach(r => {
+    if (!inventory.some(x => x.name === r.name && x.node === r.node)) inventory.push(r);
+  });
+}
+
+const skuFrom = (name, size) =>
+  (name.split(/\s+/).map(w => w[0]).join('').slice(0,3).toUpperCase() || 'SKU')
+  + '-' + String(size).replace(/[^0-9a-z]/gi,'').slice(0,5).toUpperCase();
+
+function openProduct(){
+  const sel = $('pr-which');
+  sel.innerHTML = '<option value="">＋ New product</option>' +
+    fragrances.slice().sort((a,b) => a.name.localeCompare(b.name))
+      .map(f => `<option value="${esc(f.name)}">${esc(f.name)} · ${esc(f.conc)}</option>`).join('');
+  $('nodeList').innerHTML = [...new Set(inventory.map(r => r.node))]
+    .map(n => `<option value="${esc(n)}">`).join('');
+  sel.value = '';
+  prodSyncWhich();
+  $('prodError').textContent = '';
+  $('prodScrim').hidden = false; $('prodModal').hidden = false;
+  $('pr-name').focus();
+}
+function closeProduct(){
+  $('prodScrim').hidden = true; $('prodModal').hidden = true; $('prodForm').reset();
+}
+function prodSyncWhich(){
+  const isNew = !$('pr-which').value;
+  document.querySelectorAll('#prodForm .new-only').forEach(el => { el.hidden = !isNew; });
+  ['pr-name','pr-srp'].forEach(id => { $(id).required = isNew; });
+  if (!isNew){
+    const f = fragrances.find(x => x.name === $('pr-which').value);
+    $('pr-sku').value = skuFrom(f.name, (f.conc.split('·')[1] || '').trim());
+  }
+  prodSyncCover();
+}
+function prodSyncCover(){
+  const free = (+$('pr-onhand').value || 0) - (+$('pr-alloc').value || 0);
+  const run = +$('pr-run').value || 0;
+  $('prCover').textContent = run > 0 && free > 0 ? (free / run).toFixed(1) + ' weeks' : '—';
+}
+
+async function submitProduct(e){
+  e.preventDefault();
+  const err = $('prodError'); err.textContent = '';
+  const existing = $('pr-which').value;
+  const name = existing || $('pr-name').value.trim();
+  const conc = existing ? (fragrances.find(f => f.name === existing) || {}).conc
+                        : ($('pr-conc').value.trim() || 'Eau de Parfum · 50ml');
+  const size = (conc.split('·')[1] || '50ml').trim();
+  if (!name) return err.textContent = 'Name the product, or pick one you already carry.';
+  if (!existing && !(+$('pr-srp').value > 0)) return err.textContent = 'Give the product a retail price.';
+  const node = $('pr-node').value.trim();
+  if (!node) return err.textContent = 'Say where the stock sits.';
+  if (+$('pr-alloc').value > +$('pr-onhand').value)
+    return err.textContent = 'Allocated stock cannot exceed what is on hand.';
+
+  const payload = {
+    stock: { name, node, sku: $('pr-sku').value.trim() || skuFrom(name, size), size,
+             onHand:+$('pr-onhand').value, alloc:+$('pr-alloc').value, run:+$('pr-run').value }
+  };
+  if (!existing) payload.product = { name, conc, family:$('pr-family').value.trim(), srp:+$('pr-srp').value };
+
+  const btn = document.querySelector('#prodForm button[type="submit"]');
+  if (!api.live){                                   // demo copy: keep it in this browser
+    mergeCatalogue([...(payload.product ? [{...payload.product, local:true}] : [])], [{...payload.stock, local:true}]);
+    closeProduct(); renderAll(); toast(name + ' added in this browser');
+    return;
+  }
+  btn.disabled = true; btn.textContent = 'Saving…';
+  try {
+    const d = await apiCall('/api/catalogue', payload);
+    mergeCatalogue(d.products, d.inventory);
+    $('pos-item').innerHTML = posItems();
+    closeProduct(); renderAll();
+    toast(existing ? 'Stock added at ' + node : name + ' added to the catalogue');
+  } catch (ex) { err.textContent = ex.message; }
+  finally { btn.disabled = false; btn.textContent = 'Add to inventory'; }
+}
+
+async function removeStock(name, node){
+  if (!api.live){
+    const i = inventory.findIndex(r => r.name === name && r.node === node && r.local);
+    if (i >= 0) inventory.splice(i,1);
+    renderAll(); return toast('Stock line removed');
+  }
+  try {
+    const d = await apiCall('/api/catalogue/delete', { stock:{ name, node } });
+    mergeCatalogue(d.products, d.inventory);
+    renderAll(); toast('Stock line removed');
+  } catch (ex) { toast(ex.message); }
+}
+
+$('addProduct').addEventListener('click', () => {
+  if (!isAdminUser()) return toast('Admins only');
+  openProduct();
+});
+$('prodClose').addEventListener('click', closeProduct);
+$('prodCancel').addEventListener('click', closeProduct);
+$('prodScrim').addEventListener('click', closeProduct);
+$('pr-which').addEventListener('change', prodSyncWhich);
+['pr-onhand','pr-alloc','pr-run'].forEach(id => $(id).addEventListener('input', prodSyncCover));
+$('prodForm').addEventListener('submit', submitProduct);
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape' && !$('prodModal').hidden) closeProduct();
+});
+document.getElementById('invBody').addEventListener('click', e => {
+  const b = e.target.closest('[data-stock]'); if (!b) return;
+  removeStock(b.dataset.stock, b.dataset.node);
+});
+
 /* ═══════════════════════════════════════════════════════════
    Render + wiring
    ═══════════════════════════════════════════════════════════ */
@@ -2541,6 +2726,7 @@ function applyMode(){
   }
   const add = document.getElementById('addPartner');
   add.hidden = !admin;
+  document.getElementById('addProduct').hidden = !admin;
 
   const first = admin ? (partnerView ? 'mine' : 'overview') : 'board';
   const open = document.querySelector('.tab.on');
@@ -2564,6 +2750,7 @@ async function enterApp(){
   if (api.live){
     try { mergeServerPartners((await apiCall('/api/partners')).partners || []); } catch {}
     try { sales = (await apiCall('/api/sales')).sales || []; } catch { sales = []; }
+    try { const c = await apiCall('/api/catalogue'); mergeCatalogue(c.products, c.inventory); } catch {}
     await loadPeople();
   } else {
     loadLocalPartners().forEach(r => {
