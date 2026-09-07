@@ -192,7 +192,7 @@ button,input,select{ font:inherit; color:inherit; }
 .linkish:hover{ color:var(--text); }
 .code-foot{ display:flex; justify-content:space-between; align-items:center; gap:12px; }
 
-/* ————— Counter sales ————— */
+/* ————— Order form ————— */
 .pos-grid{ display:grid; grid-template-columns:repeat(3,1fr); gap:14px 16px; align-items:end; }
 .pos-grid .pos-total{ display:flex; flex-direction:column; gap:6px; }
 .pos-grid .pos-total b{ font-size:24px; font-weight:600; color:var(--gold); letter-spacing:-.02em; }
@@ -279,7 +279,7 @@ button,input,select{ font:inherit; color:inherit; }
 .feed-item.unseen{ background:var(--gold-wash); }
 .feed-ico{ width:30px; height:30px; border-radius:50%; flex:none; display:grid; place-items:center;
   font-size:13px; background:var(--panel-soft); border:1px solid var(--line); }
-.feed-item.sale .feed-ico{ color:var(--ok); }
+.feed-item.order .feed-ico{ color:var(--ok); }
 .feed-item.register .feed-ico{ color:var(--gold); }
 .feed-item.approval .feed-ico{ color:var(--accent2); }
 .feed-text{ font-size:13.5px; line-height:1.45; }
@@ -826,7 +826,6 @@ td{ border-bottom:1px solid var(--line-soft); }
   <button class="tab" data-view="orderbook" data-role="admin">Orders</button>
   <button class="tab" data-view="access" data-role="admin" data-admin="yes">Access<span class="count" id="tabPending"></span></button>
   <button class="tab" data-view="board" data-role="reseller">Leaderboard</button>
-  <button class="tab" data-view="pos" data-role="reseller">My sales</button>
   <button class="tab" data-view="orders" data-role="reseller">Add order</button>
   <button class="tab" data-view="mine" data-role="partnerview">Performance</button>
   <button class="tab" data-view="statement" data-role="partnerview">Statements</button>
@@ -1037,50 +1036,6 @@ td{ border-bottom:1px solid var(--line-soft); }
       </div>
     </section>
   </div>
-
-  <!-- Reseller · counter sales -->
-  <div class="view" id="view-pos">
-    <section style="margin-top:26px">
-      <div class="section-head">
-        <h2>Record a sale</h2>
-        <span class="section-note">Goes straight to your own book — nobody else's.</span>
-      </div>
-      <div class="panel" style="padding:20px 22px">
-        <form id="posForm" class="pos-grid" autocomplete="off">
-          <div class="f"><label for="pos-item">Fragrance</label><select id="pos-item"></select></div>
-          <div class="f"><label for="pos-qty">Quantity</label>
-            <input id="pos-qty" type="number" min="1" max="99" value="1" required></div>
-          <div class="f"><label for="pos-unit">Unit price</label>
-            <div class="unit"><span>₱</span><input id="pos-unit" type="number" min="1" step="1" required></div></div>
-          <div class="f"><label for="pos-method">Payment</label>
-            <select id="pos-method"><option>Cash</option><option>GCash</option>
-              <option>Card</option><option>Bank transfer</option></select></div>
-          <div class="f"><label for="pos-customer">Customer <span class="hint">optional</span></label>
-            <input id="pos-customer" maxlength="40" placeholder="Walk-in"></div>
-          <div class="f pos-total"><label>Sale total</label><b id="posTotal">₱0</b></div>
-          <div class="pos-actions">
-            <span class="form-error" id="posError" role="alert"></span>
-            <button class="primary" type="submit">Record sale</button>
-          </div>
-        </form>
-      </div>
-    </section>
-
-    <div class="ledger" id="posLedger" style="margin-top:22px"></div>
-
-    <section>
-      <div class="section-head"><h2>My sales</h2><span class="period-slot"></span><span class="section-note" id="posNote"></span></div>
-      <div class="table-wrap">
-        <table>
-          <thead><tr><th>When</th><th>Fragrance</th><th>Qty</th><th>Unit</th>
-            <th>Total</th><th>Payment</th><th>Customer</th><th></th></tr></thead>
-          <tbody id="posBody"></tbody>
-        </table>
-        <div class="empty" id="posEmpty" hidden>No sales recorded yet. <b>Your first one will show here.</b></div>
-      </div>
-    </section>
-  </div>
-
 
   <!-- Reseller · orders to the maison -->
   <div class="view" id="view-orders">
@@ -2546,7 +2501,6 @@ async function submitProduct(e){
   try {
     const d = await apiCall('/api/catalogue', payload);
     mergeCatalogue(d.products, d.inventory);
-    $('pos-item').innerHTML = posItems();
     $('or-item').innerHTML = posItems();
     closeProduct(); renderAll();
     toast(existing ? 'Stock added at ' + node : name + ' added to the catalogue');
@@ -2605,7 +2559,7 @@ const timeAgo = ms => {
   if (s < 604800) return Math.floor(s/86400) + 'd ago';
   return new Date(ms).toLocaleDateString('en-PH', { day:'numeric', month:'short' });
 };
-const feedIcon = t => t === 'sale' ? '₱' : t === 'register' ? '☺' : '✓';
+const feedIcon = t => t === 'order' ? '₱' : t === 'register' ? '☺' : '✓';
 
 function renderFeed(){
   const unseen = events.filter(e => e.at > seenAt).length;
@@ -2944,7 +2898,7 @@ $('passForm').addEventListener('submit', async e => {
 function renderAll(){
   if (!account) return;
   if (!isAdminUser()){                          // reseller: the board and their own books
-    renderLeaderboard(); renderPos(); renderShelf(); renderBasket(); renderOrders(); buildCharts();
+    renderLeaderboard(); renderShelf(); renderBasket(); renderOrders(); buildCharts();
     return;
   }
   renderLedger();
@@ -3070,106 +3024,11 @@ document.getElementById('signOut').addEventListener('click', async () => {
   toast('Signed out');
 });
 
-/* ————— counter sales ————— */
-let sales = [];
-const myPartnerName = () => (account && (account.partner || account.store || account.name)) || '';
-
+/* ————— the reseller's product list, shared by the order shelf ————— */
 function posItems(){
-  return fragrances.map(f => `<option value="${esc(f.name)}" data-srp="${f.srp}">${esc(f.name)} · ${esc(f.conc)}</option>`).join('');
+  return fragrances.map(f =>
+    `<option value="${esc(f.name)}" data-srp="${f.srp}">${esc(f.name)} · ${esc(f.conc)}</option>`).join('');
 }
-function posSyncTotal(){
-  const qty = +document.getElementById('pos-qty').value || 0;
-  const unit = +document.getElementById('pos-unit').value || 0;
-  document.getElementById('posTotal').textContent = peso(qty * unit);
-}
-function posSyncPrice(){
-  const opt = document.getElementById('pos-item').selectedOptions[0];
-  if (opt) document.getElementById('pos-unit').value = opt.dataset.srp;
-  posSyncTotal();
-}
-
-function renderPos(){
-  const mine = sales.filter(s => !account || s.by === account.email).slice().reverse();
-  const day = 24 * 3600 * 1000;
-  const since = { mtd: 30, qtd: 92, ytd: 365 }[period] * day;
-  const inPeriod = mine.filter(s => Date.now() - s.at <= since);
-  const gross = sum(inPeriod.map(s => s.total));
-  const units = sum(inPeriod.map(s => s.qty));
-  const r = resellers.find(x => x.name === account.partner);
-  const margin = r ? r.margin : 0.36;
-
-  document.getElementById('posLedger').innerHTML = `
-    <div class="tile lead">
-      <div class="k-label">Counter sales · ${esc(P().short)}</div>
-      <div class="k-value num">${peso(gross)}</div>
-      <div class="k-foot"><span class="k-note">${inPeriod.length} sale${inPeriod.length === 1 ? '' : 's'} · ${units} units</span></div>
-    </div>
-    <div class="tile">
-      <div class="k-label">My margin on these</div>
-      <div class="k-value num">${peso(gross * margin)}</div>
-      <div class="k-foot"><span class="k-note">${Math.round(margin*100)}% of counter takings</span></div>
-    </div>
-    <div class="tile">
-      <div class="k-label">Average sale</div>
-      <div class="k-value num">${peso(inPeriod.length ? gross / inPeriod.length : 0)}</div>
-      <div class="k-foot"><span class="k-note">across ${units} units</span></div>
-    </div>
-    <div class="tile">
-      <div class="k-label">Busiest payment</div>
-      <div class="k-value" style="font-size:22px">${esc(busiestMethod(inPeriod))}</div>
-      <div class="k-foot"><span class="k-note">of ${inPeriod.length} recorded</span></div>
-    </div>`;
-
-  document.getElementById('posNote').textContent =
-    P().label + ' · ' + inPeriod.length + ' of ' + mine.length + ' recorded sales';
-  document.getElementById('posBody').innerHTML = mine.map(s => `<tr>
-    <td class="r-sub">${new Date(s.at).toLocaleDateString('en-PH',{day:'numeric',month:'short'})}
-      <span class="r-sub">${new Date(s.at).toLocaleTimeString('en-PH',{hour:'numeric',minute:'2-digit'})}</span></td>
-    <td class="r-name">${esc(s.item)}</td>
-    <td class="num">${s.qty}</td>
-    <td class="num">${peso(s.unit)}</td>
-    <td class="r-num num">${peso(s.total)}</td>
-    <td><span class="pill p-flat">${esc(s.method)}</span></td>
-    <td class="r-sub">${esc(s.customer || 'Walk-in')}</td>
-    <td><button class="linkish" data-sale="${esc(s.id)}">Remove</button></td>
-  </tr>`).join('');
-  document.getElementById('posEmpty').hidden = mine.length > 0;
-}
-function busiestMethod(list){
-  if (!list.length) return '—';
-  const tally = {};
-  list.forEach(s => { tally[s.method] = (tally[s.method] || 0) + 1; });
-  return Object.entries(tally).sort((a,b) => b[1] - a[1])[0][0];
-}
-
-document.getElementById('posForm').addEventListener('submit', async e => {
-  e.preventDefault();
-  const err = document.getElementById('posError');
-  err.textContent = '';
-  try {
-    const d = await apiCall('/api/sales', {
-      item: document.getElementById('pos-item').value,
-      qty: +document.getElementById('pos-qty').value,
-      unit: +document.getElementById('pos-unit').value,
-      method: document.getElementById('pos-method').value,
-      customer: document.getElementById('pos-customer').value
-    });
-    sales = d.sales;
-    document.getElementById('pos-customer').value = '';
-    document.getElementById('pos-qty').value = 1;
-    posSyncTotal();
-    renderPos();
-    loadEvents(false);
-    toast('Sale recorded');
-  } catch (ex) { err.textContent = ex.message; }
-});
-document.getElementById('posBody').addEventListener('click', async e => {
-  const b = e.target.closest('[data-sale]'); if (!b) return;
-  try { sales = (await apiCall('/api/sales/delete', { id: b.dataset.sale })).sales; renderPos(); toast('Sale removed'); }
-  catch (ex) { toast(ex.message); }
-});
-['pos-qty','pos-unit'].forEach(id => document.getElementById(id).addEventListener('input', posSyncTotal));
-document.getElementById('pos-item').addEventListener('change', posSyncPrice);
 
 /* ————— access (admin) ————— */
 let people = [];
@@ -3314,7 +3173,6 @@ async function enterApp(){
   document.getElementById('app').hidden = false;
   if (api.live){
     try { mergeServerPartners((await apiCall('/api/partners')).partners || []); } catch {}
-    try { sales = (await apiCall('/api/sales')).sales || []; } catch { sales = []; }
     try { const c = await apiCall('/api/catalogue'); mergeCatalogue(c.products, c.inventory); } catch {}
     try { orders = (await apiCall('/api/orders')).orders || []; } catch { orders = []; }
     await loadPeople();
@@ -3323,9 +3181,8 @@ async function enterApp(){
       if (!resellers.some(x => x.name === r.name || x.phone === r.phone)) resellers.push(r);
     });
   }
-  document.getElementById('pos-item').innerHTML = posItems();
   document.getElementById('or-item').innerHTML = posItems();
-  posSyncPrice(); orderSyncUnit(); basket = [];
+  orderSyncUnit(); basket = [];
   viewingPartner = null;
   session = { role:'admin', name:'Wholesale desk' };
   fillViewAs();
