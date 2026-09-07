@@ -163,6 +163,54 @@ button,input,select{ font:inherit; color:inherit; }
   border-top:1px solid var(--line); color:var(--faint); font-size:12.5px; }
 .site-foot b{ font-weight:400; color:var(--muted); }
 
+/* ————— Sign in ————— */
+.gate{ min-height:100vh; display:grid; place-items:center; padding:40px 20px; }
+.gate-card{ width:min(430px,100%); display:flex; flex-direction:column; gap:20px; }
+.gate-brand{ text-align:center; }
+.gate-brand .wordmark{ font-size:32px; }
+.gate-brand p{ color:var(--muted); font-size:13px; margin:8px 0 0; }
+.gate-form{ background:var(--panel); border:1px solid var(--line-soft); border-radius:var(--r);
+  padding:24px; display:flex; flex-direction:column; gap:14px; box-shadow:var(--shadow); }
+.field{ display:flex; flex-direction:column; gap:6px; }
+.field label{ color:var(--muted); font-size:10.5px; letter-spacing:.06em; text-transform:uppercase; font-weight:500; }
+.field input{ background:var(--bg); border:1px solid var(--line); border-radius:var(--r3);
+  padding:11px 13px; color:var(--text); font-size:14px; }
+.field input::placeholder{ color:var(--faint); }
+.gate-error{ color:var(--crit); font-size:13px; min-height:19px; }
+.gate-note{ border:1px solid var(--line-soft); border-radius:var(--r2); padding:15px 18px;
+  display:flex; flex-direction:column; gap:9px; }
+.gate-note h4{ margin:0; color:var(--muted); font-size:10.5px; letter-spacing:.08em;
+  text-transform:uppercase; font-weight:500; }
+.cred{ display:flex; justify-content:space-between; gap:14px; font-size:13px;
+  border-top:1px solid var(--line-soft); padding-top:8px; }
+.cred:first-of-type{ border-top:none; padding-top:0; }
+.warn-strip{ background:var(--warn-wash); border:1px solid var(--warn); border-radius:var(--r2);
+  color:var(--text); padding:12px 15px; font-size:12.5px; }
+.warn-strip b{ color:var(--warn); font-weight:500; }
+.linkish{ background:none; border:none; cursor:pointer; color:var(--gold);
+  font-size:12.5px; padding:0; text-decoration:underline; text-underline-offset:3px; }
+.linkish:hover{ color:var(--text); }
+.code-foot{ display:flex; justify-content:space-between; align-items:center; gap:12px; }
+
+/* ————— Counter sales ————— */
+.pos-grid{ display:grid; grid-template-columns:repeat(3,1fr); gap:14px 16px; align-items:end; }
+.pos-grid .pos-total{ display:flex; flex-direction:column; gap:6px; }
+.pos-grid .pos-total b{ font-size:24px; font-weight:600; color:var(--gold); letter-spacing:-.02em; }
+.pos-actions{ grid-column:1 / -1; display:flex; align-items:center; gap:14px; justify-content:flex-end; }
+.pos-actions .form-error{ flex:1; margin:0; }
+@media (max-width:760px){ .pos-grid{ grid-template-columns:1fr 1fr; } }
+@media (max-width:520px){ .pos-grid{ grid-template-columns:1fr; } }
+
+/* ————— Access ————— */
+.mini-sel{ background:var(--panel-soft); border:1px solid var(--line); border-radius:999px;
+  color:var(--text); font-size:12px; padding:5px 10px; margin-right:6px; }
+.approve{ display:flex; flex-wrap:wrap; gap:6px; }
+.row-actions{ display:flex; gap:7px; justify-content:flex-end; flex-wrap:wrap; }
+.tiny{ font-size:11.5px; padding:5px 12px; }
+.primary.tiny{ box-shadow:none; }
+.who-chip{ display:flex; align-items:center; gap:9px; font-size:13px; color:var(--muted); }
+.who-chip b{ color:var(--text); font-weight:500; }
+
 /* ————— Leaderboard ————— */
 .lb{ display:flex; flex-direction:column; }
 .lb-row{ display:grid; grid-template-columns:44px 2fr 1.5fr 1fr auto; gap:16px;
@@ -609,14 +657,62 @@ td{ border-bottom:1px solid var(--line-soft); }
 </head>
 <body>
 
+<!-- ————————————— Sign in ————————————— -->
+<div class="gate" id="gate">
+  <div class="gate-card">
+    <div class="gate-brand">
+      <div class="wordmark">VERMONIX</div>
+      <p>maison de parfum · partner desk</p>
+    </div>
+
+    <form class="gate-form" id="loginForm" autocomplete="on">
+      <div class="field"><label for="li-email">Email</label>
+        <input id="li-email" type="email" autocomplete="username" placeholder="you@company.ph" required></div>
+      <div class="field"><label for="li-pass">Password</label>
+        <input id="li-pass" type="password" autocomplete="current-password" placeholder="••••••••" required></div>
+      <div class="gate-error" id="loginError" role="alert"></div>
+      <button class="primary" type="submit">Sign in</button>
+      <div class="code-foot"><span class="hint">No account yet?</span>
+        <button type="button" class="linkish" id="toRegister">Request access</button></div>
+    </form>
+
+    <form class="gate-form" id="registerForm" autocomplete="on" hidden>
+      <div class="field"><label for="rg-name">Your name</label>
+        <input id="rg-name" maxlength="40" placeholder="Ana Salvador" required></div>
+      <div class="field"><label for="rg-store">Shop or company</label>
+        <input id="rg-store" maxlength="40" placeholder="Aurora Scents"></div>
+      <div class="field"><label for="rg-email">Email</label>
+        <input id="rg-email" type="email" autocomplete="username" placeholder="you@company.ph" required></div>
+      <div class="field"><label for="rg-pass">Password</label>
+        <input id="rg-pass" type="password" autocomplete="new-password" placeholder="At least 8 characters" required></div>
+      <div class="gate-error" id="registerError" role="alert"></div>
+      <button class="primary" type="submit">Request access</button>
+      <div class="code-foot"><span class="hint">Already have one?</span>
+        <button type="button" class="linkish" id="toLogin">Sign in</button></div>
+    </form>
+
+    <div class="warn-strip" id="pendingNote" hidden>
+      <b>Request received.</b> An admin has to approve the account before it can sign in.
+      You will not be able to log in until they do.
+    </div>
+
+    <div class="gate-note">
+      <h4>What you get</h4>
+      <div class="cred"><span>Admin</span><span class="hint">the whole desk, and who gets in</span></div>
+      <div class="cred"><span>Reseller</span><span class="hint">the leaderboard, and their own counter sales</span></div>
+    </div>
+  </div>
+</div>
+
 <!-- ————————————— App ————————————— -->
-<div id="app">
+<div id="app" hidden>
 <header>
   <div class="brand">
     <span class="wordmark">VERMONIX</span>
     <span class="tagline" id="brandSub">maison de parfum</span>
   </div>
   <div class="head-right">
+    <span class="who-chip" id="whoChip"></span>
     <label class="who" for="viewAs"><span>View</span>
       <select class="viewas" id="viewAs"></select></label>
     <div class="segmented" role="group" aria-label="Reporting period">
@@ -628,7 +724,7 @@ td{ border-bottom:1px solid var(--line-soft); }
       <button id="btnNight">Night</button>
       <button id="btnDay">Day</button>
     </div>
-    <button class="ghost" id="adminBtn">Admin</button>
+    <button class="ghost" id="signOut">Sign out</button>
   </div>
 </header>
 
@@ -637,9 +733,12 @@ td{ border-bottom:1px solid var(--line-soft); }
   <button class="tab" data-view="resellers" data-role="admin">Partners</button>
   <button class="tab" data-view="inventory" data-role="admin">Inventory</button>
   <button class="tab" data-view="compliance" data-role="admin" data-admin="yes">Compliance<span class="count" id="tabFlags"></span></button>
-  <button class="tab" data-view="mine" data-role="reseller">Performance</button>
-  <button class="tab" data-view="statement" data-role="reseller">Statements</button>
-  <button class="tab" data-view="mycases" data-role="reseller">Compliance<span class="count" id="tabMyFlags"></span></button>
+  <button class="tab" data-view="access" data-role="admin" data-admin="yes">Access<span class="count" id="tabPending"></span></button>
+  <button class="tab" data-view="board" data-role="reseller">Leaderboard</button>
+  <button class="tab" data-view="pos" data-role="reseller">My sales</button>
+  <button class="tab" data-view="mine" data-role="partnerview">Performance</button>
+  <button class="tab" data-view="statement" data-role="partnerview">Statements</button>
+  <button class="tab" data-view="mycases" data-role="partnerview">Compliance<span class="count" id="tabMyFlags"></span></button>
 </nav>
 
 <main>
@@ -832,6 +931,81 @@ td{ border-bottom:1px solid var(--line-soft); }
     <div class="cases" id="myCaseList"></div>
     <div class="empty" id="myCaseEmpty" hidden>No pricing or channel cases on your account. <b>Nothing to action.</b></div>
   </div>
+
+  <!-- Reseller · leaderboard -->
+  <div class="view" id="view-board">
+    <section style="margin-top:26px">
+      <div class="section-head"><h2>Leaderboard</h2><span class="section-note" id="lbNote2"></span></div>
+      <div class="panel"><div class="lb" id="lbList2"></div></div>
+      <div class="section-note" style="margin-top:9px">
+        Momentum compares a partner's share of sell-in this month with their share across the year.
+      </div>
+    </section>
+  </div>
+
+  <!-- Reseller · counter sales -->
+  <div class="view" id="view-pos">
+    <section style="margin-top:26px">
+      <div class="section-head">
+        <h2>Record a sale</h2>
+        <span class="section-note">Goes straight to your own book — nobody else's.</span>
+      </div>
+      <div class="panel" style="padding:20px 22px">
+        <form id="posForm" class="pos-grid" autocomplete="off">
+          <div class="f"><label for="pos-item">Fragrance</label><select id="pos-item"></select></div>
+          <div class="f"><label for="pos-qty">Quantity</label>
+            <input id="pos-qty" type="number" min="1" max="99" value="1" required></div>
+          <div class="f"><label for="pos-unit">Unit price</label>
+            <div class="unit"><span>₱</span><input id="pos-unit" type="number" min="1" step="1" required></div></div>
+          <div class="f"><label for="pos-method">Payment</label>
+            <select id="pos-method"><option>Cash</option><option>GCash</option>
+              <option>Card</option><option>Bank transfer</option></select></div>
+          <div class="f"><label for="pos-customer">Customer <span class="hint">optional</span></label>
+            <input id="pos-customer" maxlength="40" placeholder="Walk-in"></div>
+          <div class="f pos-total"><label>Sale total</label><b id="posTotal">₱0</b></div>
+          <div class="pos-actions">
+            <span class="form-error" id="posError" role="alert"></span>
+            <button class="primary" type="submit">Record sale</button>
+          </div>
+        </form>
+      </div>
+    </section>
+
+    <div class="ledger" id="posLedger" style="margin-top:22px"></div>
+
+    <section>
+      <div class="section-head"><h2>My sales</h2><span class="section-note" id="posNote"></span></div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>When</th><th>Fragrance</th><th>Qty</th><th>Unit</th>
+            <th>Total</th><th>Payment</th><th>Customer</th><th></th></tr></thead>
+          <tbody id="posBody"></tbody>
+        </table>
+        <div class="empty" id="posEmpty" hidden>No sales recorded yet. <b>Your first one will show here.</b></div>
+      </div>
+    </section>
+  </div>
+
+  <!-- Admin · access -->
+  <div class="view" id="view-access">
+    <section style="margin-top:26px">
+      <div class="section-head">
+        <h2>Access requests</h2>
+        <span class="section-note" id="accessNote"></span>
+      </div>
+      <div class="panel"><div class="lb" id="pendingList"></div></div>
+    </section>
+    <section>
+      <div class="section-head"><h2>People</h2>
+        <span class="section-note">Change a role and it applies on their next request.</span></div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Person</th><th>Email</th><th>Shop</th><th>Role</th><th>Linked partner</th><th>Status</th><th></th></tr></thead>
+          <tbody id="peopleBody"></tbody>
+        </table>
+      </div>
+    </section>
+  </div>
 </main>
 </div>
 
@@ -935,24 +1109,6 @@ td{ border-bottom:1px solid var(--line-soft); }
       <button type="button" class="ghost" id="addCancel">Cancel</button>
       <button type="submit" class="primary">Add partner</button>
     </div>
-  </form>
-</div>
-
-<div class="modal-scrim" id="adminScrim" hidden></div>
-<div class="modal narrow" id="adminModal" role="dialog" aria-modal="true" aria-labelledby="adminTitle" hidden>
-  <div class="modal-head">
-    <div>
-      <h3 id="adminTitle">Admin code</h3>
-      <div class="stamp">Unlocks compliance cases and adding partners.</div>
-    </div>
-    <button class="close" id="adminClose" aria-label="Close">✕</button>
-  </div>
-  <form class="modal-body" id="adminForm" autocomplete="off">
-    <div class="f"><label for="adminCode">Code</label>
-      <input id="adminCode" type="password" placeholder="••••••••••" required></div>
-    <div class="form-error" id="codeError" role="alert"></div>
-    <div class="modal-foot"><span class="spacer"></span>
-      <button type="submit" class="primary">Unlock</button></div>
   </form>
 </div>
 
@@ -1442,7 +1598,7 @@ function renderMyCases(){
    ═══════════════════════════════════════════════════════════ */
 let lastFocus = null;
 function openDrawer(name){
-  if (viewingPartner) return;                 // partner view has no partner list
+  if (!isAdminUser() || viewingPartner) return;   // resellers see the board, not the files
   const r = resellers.find(x => x.name === name);
   if (!r) return;
   lastFocus = document.activeElement;
@@ -1462,7 +1618,7 @@ function openDrawer(name){
       <div class="fact"><span>Contact number</span><b class="num" style="font-size:13px">${esc(prettyPhone(r.phone))}</b></div>
       <div class="fact"><span>Doors</span><b class="num">${r.doors}</b></div>
     </div>
-    ${r.local && isAdmin ? `<div><button class="ghost" id="removePartner">Remove this partner</button>
+    ${r.local && isAdminUser() ? `<div><button class="ghost" id="removePartner">Remove this partner</button>
       <div class="stamp" style="margin-top:7px">Added on this browser · removing also removes their login.</div></div>` : ''}
     <div><button class="ghost" id="openPartnerView">Open their dashboard</button></div>
     <div>
@@ -1980,7 +2136,7 @@ function removePartner(name){
 }
 
 $('addPartner').addEventListener('click', () => {
-  if (!isAdmin){ toast('Sign in as admin to add a partner'); return openAdmin(); }
+  if (!isAdminUser()) return toast('Admins only');
   openAddPartner();
 });
 $('addClose').addEventListener('click', closeAddPartner);
@@ -2013,7 +2169,7 @@ function renderLeaderboard(){
   document.getElementById('lbNote').textContent =
     P().label + ' · ' + rows.length + ' partners by sell-in';
 
-  document.getElementById('lbList').innerHTML = rows.map((r,i) => {
+  const html = rows.map((r,i) => {
     const share = r.rev[period] / total * 100;
     const move = (r.rev.mtd / mtdTotal - r.rev.ytd / ytdTotal) * 100;
     const cls = move > 0.35 ? 'up' : move < -0.35 ? 'down' : 'flat';
@@ -2036,6 +2192,11 @@ function renderLeaderboard(){
       <span class="lb-move ${cls}">${label}</span>
     </button>`;
   }).join('');
+  document.getElementById('lbList').innerHTML = html;
+  document.getElementById('lbList2').innerHTML = html;
+  document.getElementById('lbNote2').textContent = document.getElementById('lbNote').textContent;
+  const waiting = people.filter(u => u.status === 'pending').length;
+  document.getElementById('tabPending').textContent = waiting ? '· ' + waiting : '';
 }
 document.getElementById('lbList').addEventListener('click', e => {
   const b = e.target.closest('[data-partner]');
@@ -2046,10 +2207,15 @@ document.getElementById('lbList').addEventListener('click', e => {
    Render + wiring
    ═══════════════════════════════════════════════════════════ */
 function renderAll(){
+  if (!account) return;
+  if (!isAdminUser()){                          // reseller: the board and their own book
+    renderLeaderboard(); renderPos(); buildCharts();
+    return;
+  }
   renderLedger();
   if (session.role === 'admin'){
     renderMap(); renderFragrances(); renderChips(); renderResellers();
-    renderLeaderboard(); renderInventory(); renderCompliance();
+    renderLeaderboard(); renderInventory(); renderCompliance(); renderAccess();
   } else {
     renderMine(); renderStatement(); renderMyCases();
   }
@@ -2079,38 +2245,266 @@ function clearRoleDom(){
 }
 
 /* ═══════════════════════════════════════════════════════════
-   Access
+   Accounts
 
-   The desk is open: anyone with the link sees the company view
-   and can look at any partner's dashboard. A code unlocks the
-   admin extras — compliance cases, adding and removing partners.
-
-   That code is checked in the page, so treat it as a latch, not
-   a lock: it keeps the tab tidy, it does not protect anything.
-   Real protection needs a server, and so does real partner data.
+   Every screen is behind a session now. The worker decides what
+   a session may do; this file only decides what to draw. A
+   reseller gets the leaderboard and their own counter sales,
+   an admin gets the desk and the access list.
    ═══════════════════════════════════════════════════════════ */
-/* When this page is served by its worker, the admin password is checked
-   on the server and partners live in KV — shared by everyone who opens
-   the link. Opened as a plain file (or inside a sandboxed preview) there
-   is no API, so it falls back to this browser's own storage. */
-const api = { live:false, configured:false };
+let account = null;                                   // the signed-in user
+const isAdminUser = () => !!account && account.role === 'admin';
 
-async function apiCall(path, body){
-  const res = await fetch(path, body ? {
-    method:'POST', headers:{ 'Content-Type':'application/json' }, body:JSON.stringify(body)
+async function apiCall(path, body, method){
+  const res = await fetch(path, body || method === 'POST' ? {
+    method:'POST', headers:{ 'Content-Type':'application/json' }, body:JSON.stringify(body || {})
   } : { headers:{ 'Accept':'application/json' } });
   const data = await res.json().catch(() => ({}));
-  if (!res.ok) throw new Error(data.error || ('Request failed (' + res.status + ')'));
+  if (!res.ok) throw Object.assign(new Error(data.error || ('Request failed (' + res.status + ')')), { data, status:res.status });
   return data;
 }
 
-let isAdmin = false;
-try { isAdmin = localStorage.getItem('vermonix-admin') === '1'; } catch {}
+const gate = () => document.getElementById('gate');
+function showGate(){
+  gate().hidden = false;
+  document.getElementById('app').hidden = true;
+  document.getElementById('li-email').focus();
+}
 
-/* The rest of the page reasons about a session, so keep giving it
-   one: the company view is the wholesale desk, and picking a
-   partner switches to that partner's own dashboard. */
-let session = { role:'admin', name:'Wholesale desk' };
+document.getElementById('toRegister').addEventListener('click', () => {
+  document.getElementById('loginForm').hidden = true;
+  document.getElementById('registerForm').hidden = false;
+  document.getElementById('pendingNote').hidden = true;
+  document.getElementById('rg-name').focus();
+});
+document.getElementById('toLogin').addEventListener('click', () => {
+  document.getElementById('registerForm').hidden = true;
+  document.getElementById('loginForm').hidden = false;
+  document.getElementById('li-email').focus();
+});
+
+document.getElementById('loginForm').addEventListener('submit', async e => {
+  e.preventDefault();
+  const err = document.getElementById('loginError');
+  err.textContent = '';
+  try {
+    const d = await apiCall('/api/login', {
+      email: document.getElementById('li-email').value,
+      password: document.getElementById('li-pass').value
+    });
+    account = d.user;
+    document.getElementById('loginForm').reset();
+    await enterApp();
+  } catch (ex) { err.textContent = ex.message; }
+});
+
+document.getElementById('registerForm').addEventListener('submit', async e => {
+  e.preventDefault();
+  const err = document.getElementById('registerError');
+  err.textContent = '';
+  try {
+    await apiCall('/api/register', {
+      name: document.getElementById('rg-name').value,
+      store: document.getElementById('rg-store').value,
+      email: document.getElementById('rg-email').value,
+      password: document.getElementById('rg-pass').value
+    });
+    document.getElementById('registerForm').reset();
+    document.getElementById('registerForm').hidden = true;
+    document.getElementById('loginForm').hidden = false;
+    document.getElementById('pendingNote').hidden = false;
+  } catch (ex) { err.textContent = ex.message; }
+});
+
+document.getElementById('signOut').addEventListener('click', async () => {
+  await apiCall('/api/logout', {}).catch(() => {});
+  account = null; session = { role:'admin', name:'' }; viewingPartner = null;
+  Object.keys(charts).forEach(k => { charts[k].destroy(); delete charts[k]; });
+  showGate();
+  toast('Signed out');
+});
+
+/* ————— counter sales ————— */
+let sales = [];
+const myPartnerName = () => (account && (account.partner || account.store || account.name)) || '';
+
+function posItems(){
+  return fragrances.map(f => `<option value="${esc(f.name)}" data-srp="${f.srp}">${esc(f.name)} · ${esc(f.conc)}</option>`).join('');
+}
+function posSyncTotal(){
+  const qty = +document.getElementById('pos-qty').value || 0;
+  const unit = +document.getElementById('pos-unit').value || 0;
+  document.getElementById('posTotal').textContent = peso(qty * unit);
+}
+function posSyncPrice(){
+  const opt = document.getElementById('pos-item').selectedOptions[0];
+  if (opt) document.getElementById('pos-unit').value = opt.dataset.srp;
+  posSyncTotal();
+}
+
+function renderPos(){
+  const mine = sales.filter(s => !account || s.by === account.email).slice().reverse();
+  const day = 24 * 3600 * 1000;
+  const since = { mtd: 30, qtd: 92, ytd: 365 }[period] * day;
+  const inPeriod = mine.filter(s => Date.now() - s.at <= since);
+  const gross = sum(inPeriod.map(s => s.total));
+  const units = sum(inPeriod.map(s => s.qty));
+  const r = resellers.find(x => x.name === account.partner);
+  const margin = r ? r.margin : 0.36;
+
+  document.getElementById('posLedger').innerHTML = `
+    <div class="tile lead">
+      <div class="k-label">Counter sales · ${esc(P().short)}</div>
+      <div class="k-value num">${peso(gross)}</div>
+      <div class="k-foot"><span class="k-note">${inPeriod.length} sale${inPeriod.length === 1 ? '' : 's'} · ${units} units</span></div>
+    </div>
+    <div class="tile">
+      <div class="k-label">My margin on these</div>
+      <div class="k-value num">${peso(gross * margin)}</div>
+      <div class="k-foot"><span class="k-note">${Math.round(margin*100)}% of counter takings</span></div>
+    </div>
+    <div class="tile">
+      <div class="k-label">Average sale</div>
+      <div class="k-value num">${peso(inPeriod.length ? gross / inPeriod.length : 0)}</div>
+      <div class="k-foot"><span class="k-note">across ${units} units</span></div>
+    </div>
+    <div class="tile">
+      <div class="k-label">Busiest payment</div>
+      <div class="k-value" style="font-size:22px">${esc(busiestMethod(inPeriod))}</div>
+      <div class="k-foot"><span class="k-note">of ${inPeriod.length} recorded</span></div>
+    </div>`;
+
+  document.getElementById('posNote').textContent =
+    P().label + ' · ' + inPeriod.length + ' of ' + mine.length + ' recorded sales';
+  document.getElementById('posBody').innerHTML = mine.map(s => `<tr>
+    <td class="r-sub">${new Date(s.at).toLocaleDateString('en-PH',{day:'numeric',month:'short'})}
+      <span class="r-sub">${new Date(s.at).toLocaleTimeString('en-PH',{hour:'numeric',minute:'2-digit'})}</span></td>
+    <td class="r-name">${esc(s.item)}</td>
+    <td class="num">${s.qty}</td>
+    <td class="num">${peso(s.unit)}</td>
+    <td class="r-num num">${peso(s.total)}</td>
+    <td><span class="pill p-flat">${esc(s.method)}</span></td>
+    <td class="r-sub">${esc(s.customer || 'Walk-in')}</td>
+    <td><button class="linkish" data-sale="${esc(s.id)}">Remove</button></td>
+  </tr>`).join('');
+  document.getElementById('posEmpty').hidden = mine.length > 0;
+}
+function busiestMethod(list){
+  if (!list.length) return '—';
+  const tally = {};
+  list.forEach(s => { tally[s.method] = (tally[s.method] || 0) + 1; });
+  return Object.entries(tally).sort((a,b) => b[1] - a[1])[0][0];
+}
+
+document.getElementById('posForm').addEventListener('submit', async e => {
+  e.preventDefault();
+  const err = document.getElementById('posError');
+  err.textContent = '';
+  try {
+    const d = await apiCall('/api/sales', {
+      item: document.getElementById('pos-item').value,
+      qty: +document.getElementById('pos-qty').value,
+      unit: +document.getElementById('pos-unit').value,
+      method: document.getElementById('pos-method').value,
+      customer: document.getElementById('pos-customer').value
+    });
+    sales = d.sales;
+    document.getElementById('pos-customer').value = '';
+    document.getElementById('pos-qty').value = 1;
+    posSyncTotal();
+    renderPos();
+    toast('Sale recorded');
+  } catch (ex) { err.textContent = ex.message; }
+});
+document.getElementById('posBody').addEventListener('click', async e => {
+  const b = e.target.closest('[data-sale]'); if (!b) return;
+  try { sales = (await apiCall('/api/sales/delete', { id: b.dataset.sale })).sales; renderPos(); toast('Sale removed'); }
+  catch (ex) { toast(ex.message); }
+});
+['pos-qty','pos-unit'].forEach(id => document.getElementById(id).addEventListener('input', posSyncTotal));
+document.getElementById('pos-item').addEventListener('change', posSyncPrice);
+
+/* ————— access (admin) ————— */
+let people = [];
+async function loadPeople(){
+  if (!isAdminUser()) return;
+  try { people = (await apiCall('/api/users')).users; } catch { people = []; }
+}
+function partnerOptions(sel){
+  return '<option value="">— none —</option>' + resellers.map(r =>
+    `<option value="${esc(r.name)}"${r.name === sel ? ' selected' : ''}>${esc(r.name)}</option>`).join('');
+}
+function renderAccess(){
+  const pending = people.filter(u => u.status === 'pending');
+  document.getElementById('accessNote').textContent =
+    pending.length ? pending.length + ' waiting for a decision' : 'Nothing waiting';
+  document.getElementById('pendingList').innerHTML = pending.length ? pending.map(u => `
+    <div class="lb-row" style="cursor:default">
+      <span class="lb-rank">${esc((u.name || '?').slice(0,1).toUpperCase())}</span>
+      <span>
+        <span class="lb-name">${esc(u.name)}</span>
+        <span class="lb-sub">${esc(u.email)}${u.store ? ' · ' + esc(u.store) : ''}</span>
+      </span>
+      <span class="approve" data-email="${esc(u.email)}">
+        <select class="mini-sel" data-role>
+          <option value="reseller">Reseller</option><option value="admin">Admin</option>
+        </select>
+        <select class="mini-sel" data-partner>${partnerOptions(null)}</select>
+      </span>
+      <span class="lb-val"></span>
+      <span class="row-actions">
+        <button class="primary tiny" data-act="approve">Approve</button>
+        <button class="ghost tiny" data-act="remove">Decline</button>
+      </span>
+    </div>`).join('')
+    : `<div class="empty">No access requests. <b>New sign-ups will land here.</b></div>`;
+
+  document.getElementById('peopleBody').innerHTML = people.map(u => `<tr>
+    <td class="r-name">${esc(u.name)}</td>
+    <td class="r-sub">${esc(u.email)}</td>
+    <td class="r-sub">${esc(u.store || '—')}</td>
+    <td><span class="pill ${u.role === 'admin' ? 'p-gold' : 'p-flat'}">${esc(u.role)}</span></td>
+    <td class="r-sub">${esc(u.partner || '—')}</td>
+    <td><span class="pill ${u.status === 'active' ? 'p-ok' : u.status === 'pending' ? 'p-warn' : 'p-crit'}">${esc(u.status)}</span></td>
+    <td class="row-actions">${u.email === account.email ? '<span class="r-sub">that is you</span>' : `
+      <button class="ghost tiny" data-person="${esc(u.email)}" data-act="${u.role === 'admin' ? 'make-reseller' : 'make-admin'}">
+        ${u.role === 'admin' ? 'Make reseller' : 'Make admin'}</button>
+      <button class="ghost tiny" data-person="${esc(u.email)}" data-act="remove">Remove</button>`}</td>
+  </tr>`).join('');
+}
+
+async function decide(payload, msg){
+  try {
+    await apiCall('/api/users/decide', payload);
+    await loadPeople(); renderAccess(); toast(msg);
+  } catch (ex) { toast(ex.message); }
+}
+document.getElementById('pendingList').addEventListener('click', e => {
+  const b = e.target.closest('[data-act]'); if (!b) return;
+  const row = b.closest('.lb-row');
+  const holder = row.querySelector('.approve');
+  const email = holder.dataset.email;
+  if (b.dataset.act === 'remove') return decide({ email, action:'remove' }, 'Request declined');
+  decide({ email, action:'approve',
+    role: holder.querySelector('[data-role]').value,
+    partner: holder.querySelector('[data-partner]').value }, 'Access granted');
+});
+document.getElementById('peopleBody').addEventListener('click', e => {
+  const b = e.target.closest('[data-person]'); if (!b) return;
+  const email = b.dataset.person, act = b.dataset.act;
+  if (act === 'remove') return decide({ email, action:'remove' }, 'Account removed');
+  const u = people.find(x => x.email === email) || {};
+  decide({ email, action:'role', role: act === 'make-admin' ? 'admin' : 'reseller', partner: u.partner },
+    act === 'make-admin' ? 'Now an admin' : 'Now a reseller');
+}); 
+
+/* Opened without its worker — a plain file or a sandboxed preview — there
+   is nobody to sign in against, so the page runs as a read-only demo and
+   anything added stays in this browser. */
+const api = { live:false };
+
+/* ————— what each role sees ————— */
+let session = { role:'admin', name:'' };
 let viewingPartner = null;
 
 function setView(partnerName){
@@ -2122,89 +2516,38 @@ function setView(partnerName){
 }
 
 function applyMode(){
-  const partner = !!viewingPartner;
+  const admin = isAdminUser();
+  const partnerView = admin && !!viewingPartner;
   clearRoleDom();
-  document.getElementById('brandSub').textContent =
-    partner ? 'maison de parfum · partner dashboard' : 'maison de parfum · wholesale desk';
+
+  document.getElementById('brandSub').textContent = admin
+    ? (partnerView ? 'maison de parfum · partner dashboard' : 'maison de parfum · wholesale desk')
+    : 'maison de parfum · reseller';
+  document.getElementById('whoChip').innerHTML =
+    `<b>${esc(account.name)}</b><span class="pill ${admin ? 'p-gold' : 'p-flat'}">${admin ? 'Admin' : 'Reseller'}</span>`;
+  document.getElementById('viewAs').closest('label').hidden = !admin;
+  document.getElementById('signOut').hidden = !api.live;
 
   document.querySelectorAll('.tab').forEach(t => {
-    const forThisMode = t.dataset.role === (partner ? 'reseller' : 'admin');
-    t.hidden = !forThisMode || (t.dataset.admin === 'yes' && !isAdmin);
+    const r = t.dataset.role;
+    t.hidden = admin ? (partnerView ? r !== 'partnerview' : r !== 'admin') : r !== 'reseller';
   });
-
   document.getElementById('viewAs').value = viewingPartner || '';
-  document.getElementById('partnerBanner').hidden = !partner;
-  if (partner){
+  document.getElementById('partnerBanner').hidden = !partnerView;
+  if (partnerView){
     const r = resellers.find(x => x.name === viewingPartner);
     document.getElementById('bannerText').innerHTML =
       `Viewing <b>${esc(r.name)}</b> — the dashboard this partner sees. ${esc(r.region)}.`;
   }
   const add = document.getElementById('addPartner');
-  add.hidden = false;                             // always offered, gated on use
-  add.textContent = isAdmin ? 'Add partner' : 'Add partner';
-  add.classList.toggle('locked', !isAdmin);
-  document.getElementById('adminBtn').textContent = isAdmin ? 'Admin unlocked' : 'Admin';
-  document.getElementById('adminBtn').classList.toggle('on', isAdmin);
+  add.hidden = !admin;
 
-  const first = partner ? 'mine' : 'overview';
+  const first = admin ? (partnerView ? 'mine' : 'overview') : 'board';
   const open = document.querySelector('.tab.on');
   showView(open && !open.hidden ? open.dataset.view : first);
   renderAll();
 }
 
-/* ————— Admin latch ————— */
-function openAdmin(){
-  if (isAdmin){                                   // already in: this signs out
-    isAdmin = false;
-    try { localStorage.removeItem('vermonix-admin'); } catch {}
-    if (api.live) apiCall('/api/logout', {}).catch(() => {});
-    toast(api.live ? 'Signed out' : 'Admin extras hidden');
-    applyMode();
-    return;
-  }
-  document.getElementById('codeError').textContent = '';
-  document.getElementById('adminTitle').textContent =
-    api.live ? (api.configured ? 'Admin sign-in' : 'Set the admin password') : 'Admin code';
-  document.querySelector('#adminModal .stamp').textContent = api.live
-    ? (api.configured ? 'Checked on the server. Partners you add are saved for everyone.'
-                      : 'Nobody has claimed this desk yet — the first password set becomes the admin password.')
-    : 'Unlocks compliance cases and adding partners on this browser.';
-  document.getElementById('adminScrim').hidden = false;
-  document.getElementById('adminModal').hidden = false;
-  document.getElementById('adminCode').value = '';
-  document.getElementById('adminCode').focus();
-}
-function closeAdmin(){
-  document.getElementById('adminScrim').hidden = true;
-  document.getElementById('adminModal').hidden = true;
-}
-document.getElementById('adminBtn').addEventListener('click', openAdmin);
-document.getElementById('adminClose').addEventListener('click', closeAdmin);
-document.getElementById('adminScrim').addEventListener('click', closeAdmin);
-document.getElementById('adminForm').addEventListener('submit', async e => {
-  e.preventDefault();
-  const pass = document.getElementById('adminCode').value;
-  const err = document.getElementById('codeError');
-  if (api.live){
-    try {
-      await apiCall(api.configured ? '/api/login' : '/api/setup', { password: pass });
-      api.configured = true;
-    } catch (ex) { err.textContent = ex.message; return; }
-  } else {
-    if (String(pass).trim().toUpperCase() !== 'VERMONIX-DESK-2026'){
-      err.textContent = 'That code is not right.'; return;
-    }
-    try { localStorage.setItem('vermonix-admin','1'); } catch {}
-  }
-  isAdmin = true;
-  closeAdmin(); applyMode();
-  toast(api.live ? 'Signed in as admin' : 'Admin extras unlocked');
-});
-document.addEventListener('keydown', e => {
-  if (e.key === 'Escape' && !document.getElementById('adminModal').hidden) closeAdmin();
-});
-
-/* ————— Who am I looking at ————— */
 function fillViewAs(){
   const sel = document.getElementById('viewAs');
   sel.innerHTML = '<option value="">All partners · wholesale desk</option>' +
@@ -2214,6 +2557,44 @@ function fillViewAs(){
 }
 document.getElementById('viewAs').addEventListener('change', e => setView(e.target.value || null));
 document.getElementById('bannerBack').addEventListener('click', () => setView(null));
+
+async function enterApp(){
+  gate().hidden = true;
+  document.getElementById('app').hidden = false;
+  if (api.live){
+    try { mergeServerPartners((await apiCall('/api/partners')).partners || []); } catch {}
+    try { sales = (await apiCall('/api/sales')).sales || []; } catch { sales = []; }
+    await loadPeople();
+  } else {
+    loadLocalPartners().forEach(r => {
+      if (!resellers.some(x => x.name === r.name || x.phone === r.phone)) resellers.push(r);
+    });
+  }
+  document.getElementById('pos-item').innerHTML = posItems();
+  posSyncPrice();
+  viewingPartner = null;
+  session = { role:'admin', name:'Wholesale desk' };
+  fillViewAs();
+  applyMode();
+}
+
+/* Boot: resume a session if the cookie is still good, else the gate. */
+(async () => {
+  try {
+    const { user } = await apiCall('/api/whoami');
+    api.live = true;
+    const note = document.getElementById('storageNote');
+    if (note) note.textContent = 'Accounts and partners are kept on the server.';
+    if (user){ account = user; await enterApp(); return; }
+    showGate();
+  } catch {
+    api.live = false;
+    account = { name:'Demo', email:'demo@local', role:'admin', partner:null };
+    const note = document.getElementById('storageNote');
+    if (note) note.textContent = 'Demo copy — no server here, so anything you add stays in this browser.';
+    await enterApp();
+  }
+})();
 
 document.getElementById('tabs').addEventListener('click', e => {
   const btn = e.target.closest('.tab');
@@ -2309,27 +2690,6 @@ try {
 } catch {}
 markThemeButtons();
 
-/* Boot: if a worker is serving this page it owns the partner list and the
-   admin session; otherwise fall back to what this browser saved. */
-(async () => {
-  try {
-    const who = await apiCall('/api/whoami');
-    api.live = true;
-    api.configured = !!who.configured;
-    isAdmin = !!who.admin;
-    const { partners } = await apiCall('/api/partners');
-    mergeServerPartners(partners || []);
-  } catch {
-    api.live = false;
-    loadLocalPartners().forEach(r => {
-      if (!resellers.some(x => x.name === r.name || x.phone === r.phone)) resellers.push(r);
-    });
-  }
-  const note = document.getElementById('storageNote');
-  if (note && api.live) note.textContent = 'Partners added here are saved for everyone with the link.';
-  fillViewAs();
-  applyMode();
-})();
 </script>
 
 </body>
