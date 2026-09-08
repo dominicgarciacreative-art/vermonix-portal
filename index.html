@@ -984,10 +984,6 @@ td{ border-bottom:1px solid var(--line-soft); }
         <span class="section-note">Units sold out of my doors this period</span></div>
       <div class="list" id="mineList"></div>
     </section>
-    <section>
-      <div class="section-head"><h2>My account</h2><span class="section-note">Contract terms of record</span></div>
-      <div class="panel" style="padding:22px 24px"><div class="facts" id="mineFacts"></div></div>
-    </section>
   </div>
 
   <!-- Partner · statements -->
@@ -1754,17 +1750,6 @@ function renderMine(){
     </div>`;
   }).join('');
 
-  document.getElementById('mineFacts').innerHTML = `
-    <div class="fact"><span>Account</span><b>${esc(r.name)}</b></div>
-    <div class="fact"><span>Territory</span><b>${esc(r.region)}</b></div>
-    <div class="fact"><span>Tier</span><b class="${r.tier === 'Gold' ? 'tier-gold' : ''}">${esc(r.tier)}</b></div>
-    <div class="fact"><span>Status</span><b><span class="pill ${statusPill(r.status)}">${esc(r.status)}</span></b></div>
-    <div class="fact"><span>My margin</span><b class="num">${Math.round(r.margin*100)}%</b></div>
-    <div class="fact"><span>Payment terms</span><b>${esc(r.terms)}</b></div>
-    <div class="fact"><span>Doors</span><b class="num">${r.doors}</b></div>
-    <div class="fact"><span>Partner since</span><b class="num">${r.since}</b></div>
-    <div class="fact"><span>Contract renewal</span><b>${esc(r.renewal)}</b></div>
-    <div class="fact"><span>Account manager</span><b>Dominic Garcia</b></div>`;
 }
 
 function statementRows(){
@@ -2931,7 +2916,7 @@ function showView(name){
 function clearRoleDom(){
   document.querySelectorAll('#mapWrap .pin, #mapWrap .pin-pop').forEach(el => el.remove());
   ['ledger','fragList','resellerBody','invBody','caseList',
-   'mineList','mineFacts','stateBody','stateFoot','myCaseList'].forEach(id => {
+   'mineList','stateBody','stateFoot','myCaseList'].forEach(id => {
      const el = document.getElementById(id); if (el) el.innerHTML = '';
    });
 }
@@ -3040,7 +3025,7 @@ function renderUnlinked(){
       <div class="k-foot"><span class="k-note">Ask the desk to attach your login to your shop, and your
         sell-in, margin and sell-through will appear here.</span></div>
     </div>`;
-  ['mineList','mineFacts'].forEach(id => { const el = document.getElementById(id); if (el) el.innerHTML = ''; });
+  const list = document.getElementById('mineList'); if (list) list.innerHTML = '';
   document.getElementById('mineNote').textContent = 'Awaiting a partner link';
 }
 
