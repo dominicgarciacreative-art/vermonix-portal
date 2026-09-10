@@ -103,6 +103,8 @@ button,input,select{ font:inherit; color:inherit; }
 .demo-code{ font-family:ui-monospace,SFMono-Regular,Menlo,monospace; font-size:18px;
   letter-spacing:.10em; color:var(--gold); }
 
+.ts-slot:empty{ display:none; }
+
 /* ————— Boot ————— */
 .boot{ min-height:100vh; display:grid; place-items:center; align-content:center; gap:12px; }
 .boot-mark{ font-weight:700; letter-spacing:.16em; color:var(--gold); font-size:22px; }
@@ -437,6 +439,7 @@ td{ border-bottom:1px solid var(--line-soft); }
         <input id="li-email" type="email" autocomplete="username" placeholder="you@company.ph" required></div>
       <div class="field"><label for="li-pass">Password</label>
         <input id="li-pass" type="password" autocomplete="current-password" placeholder="••••••••" required></div>
+      <div class="ts-slot" data-ts></div>
       <div class="gate-error" id="loginError" role="alert"></div>
       <button class="primary" type="submit">Sign in</button>
       <div class="code-foot"><span class="hint">No account yet?</span>
@@ -455,6 +458,7 @@ td{ border-bottom:1px solid var(--line-soft); }
         <input id="rg-email" type="email" autocomplete="username" placeholder="you@company.ph" required></div>
       <div class="field"><label for="rg-pass">Password</label>
         <input id="rg-pass" type="password" autocomplete="new-password" placeholder="At least 8 characters" required></div>
+      <div class="ts-slot" data-ts></div>
       <div class="gate-error" id="registerError" role="alert"></div>
       <button class="primary" type="submit">Request access</button>
       <div class="code-foot"><span class="hint">Already have one?</span>
@@ -2571,6 +2575,30 @@ function clearRoleDom(){
    an admin gets the desk and the access list.
    ═══════════════════════════════════════════════════════════ */
 let account = null;                                   // the signed-in user
+let turnstileKey = '';                               // set by the worker when enabled
+
+/* Draws Cloudflare's bot check into both forms, once, if it is switched on. */
+function mountTurnstile(){
+  if (!turnstileKey || document.querySelector('.ts-slot .cf-turnstile')) return;
+  const go = () => document.querySelectorAll('.ts-slot').forEach(slot => {
+    const el = document.createElement('div');
+    el.className = 'cf-turnstile';
+    el.dataset.sitekey = turnstileKey;
+    el.dataset.theme = 'auto';
+    slot.appendChild(el);
+    if (window.turnstile) window.turnstile.render(el, { sitekey: turnstileKey });
+  });
+  if (window.turnstile) return go();
+  const tag = document.createElement('script');
+  tag.src = 'https://challenges.cloudflare.com/turnstile/v0/api.js';
+  tag.async = true; tag.defer = true;
+  tag.onload = go;
+  document.head.appendChild(tag);
+}
+const turnstileToken = form => {
+  const field = form.querySelector('[name="cf-turnstile-response"]');
+  return field ? field.value : '';
+};
 const isAdminUser = () => !!account && account.role === 'admin';
 
 async function apiCall(path, body, method){
@@ -2615,7 +2643,8 @@ document.getElementById('loginForm').addEventListener('submit', async e => {
   try {
     const d = await apiCall('/api/login', {
       email: document.getElementById('li-email').value,
-      password: document.getElementById('li-pass').value
+      password: document.getElementById('li-pass').value,
+      token: turnstileToken(e.target)
     });
     account = d.user;
     document.getElementById('loginForm').reset();
@@ -2633,7 +2662,8 @@ document.getElementById('registerForm').addEventListener('submit', async e => {
       location: document.getElementById('rg-location').value,
       store: document.getElementById('rg-store').value,
       email: document.getElementById('rg-email').value,
-      password: document.getElementById('rg-pass').value
+      password: document.getElementById('rg-pass').value,
+      token: turnstileToken(e.target)
     });
     document.getElementById('registerForm').reset();
     document.getElementById('registerForm').hidden = true;
@@ -2850,8 +2880,10 @@ async function enterApp(){
 /* Boot: resume a session if the cookie is still good, else the gate. */
 (async () => {
   try {
-    const { user } = await apiCall('/api/whoami');
+    const { user, turnstile } = await apiCall('/api/whoami');
     api.live = true;
+    turnstileKey = turnstile || '';
+    mountTurnstile();
     const note = document.getElementById('storageNote');
     if (note) note.textContent = 'Accounts and partners are kept on the server.';
     if (user){ account = user; await enterApp(); return; }
